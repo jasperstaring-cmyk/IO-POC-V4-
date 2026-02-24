@@ -4,6 +4,16 @@ import IOLogo from './IOLogo.jsx'
 import { useLang } from '../LanguageContext.jsx'
 import { img } from '../images.js'
 
+// ─── TopProgressBar (rode balk bovenaan, full-width, fixed) ─────────────────
+export function TopProgressBar({ total, current }) {
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0
+  return (
+    <div className="top-progress-bar">
+      <div className="top-progress-fill" style={{ width: `${pct}%` }} />
+    </div>
+  )
+}
+
 // ─── EmailChip ────────────────────────────────────────────────────────────────
 export function EmailChip({ email, onEdit }) {
   const { t } = useLang()
@@ -15,7 +25,7 @@ export function EmailChip({ email, onEdit }) {
   )
 }
 
-// ─── ProgressBar ──────────────────────────────────────────────────────────────
+// ─── ProgressBar (inline, inside form — behouden als fallback) ───────────────
 export function ProgressBar({ total, current }) {
   return (
     <div className="progress-bar">
@@ -104,11 +114,11 @@ export function LangSwitcher() {
   )
 }
 
-// ─── AuthNav ──────────────────────────────────────────────────────────────────
+// ─── AuthNav (met top:4px voor ruimte boven de rode progress bar) ────────────
 export function AuthNav({ onBack }) {
   const { t } = useLang()
   return (
-    <header style={{ position:"sticky", top:0, zIndex:50, background:"#fff", borderBottom:`1px solid ${C.gray100}`, height:56, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 2rem" }}>
+    <header style={{ position:"sticky", top:4, zIndex:50, background:"#fff", borderBottom:`1px solid ${C.gray100}`, height:56, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 2rem" }}>
       <div style={{ cursor: onBack ? "pointer" : "default" }} onClick={() => onBack && onBack()}>
         <IOLogo />
       </div>
@@ -121,9 +131,12 @@ export function AuthNav({ onBack }) {
 }
 
 // ─── RegSidebar ───────────────────────────────────────────────────────────────
-export function RegSidebar({ planName, planPrice }) {
+export function RegSidebar({ planName, planPrice, planFeatures, planCta }) {
   const { t } = useLang()
   const usps = t("sidebar_usps")
+  const showPlan = planName && planName.length > 0
+  const features = planFeatures || (Array.isArray(usps) ? usps : [])
+
   return (
     <>
       {/* Visual */}
@@ -148,23 +161,51 @@ export function RegSidebar({ planName, planPrice }) {
         )}
       </div>
 
-      {/* USPs */}
+      {/* Plan info / USPs */}
       <div className="reg-sidebar-card">
-        {planName && planPrice ? (
+        {showPlan ? (
           <>
-            <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.5rem" }}>
-              {t("sidebar_plan_label")}
+            {/* Gekozen plan dropdown-stijl */}
+            <div style={{ border:`1.5px solid ${C.gray200}`, borderRadius:6, padding:"0.75rem 1rem", marginBottom:"1rem" }}>
+              <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.65rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.25rem" }}>
+                {t("sidebar_plan_label") || "JE HEBT GEKOZEN VOOR:"}
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy }}>{planName}</div>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke={C.gray500} strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </div>
             </div>
-            <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy, marginBottom:"0.25rem" }}>{planName}</div>
-            <div style={{ fontFamily:"var(--font-sans)", fontSize:"1.5rem", fontWeight:700, color:C.navy, marginBottom:"1.25rem" }}>{planPrice}</div>
-            <div style={{ height:1, background:C.gray100, marginBottom:"1.25rem" }}/>
+
+            {/* Prijs */}
+            {planPrice && (
+              <div style={{ marginBottom:"1rem" }}>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.65rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.25rem" }}>
+                  JOUW PRIJS
+                </div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"1.75rem", fontWeight:700, color:C.navy, lineHeight:1 }}>
+                  {planPrice}
+                </div>
+              </div>
+            )}
+
+            {/* Groene CTA banner */}
+            {planCta && (
+              <div style={{ background:C.green, borderRadius:8, padding:"0.875rem 1rem", marginBottom:"1.25rem", fontFamily:"var(--font-sans)", fontSize:"0.875rem", fontWeight:700, color:C.navy, textAlign:"center" }}>
+                {planCta}
+              </div>
+            )}
+
+            {/* Features */}
+            <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.75rem" }}>
+              WAT KRIJG JE:
+            </div>
           </>
         ) : (
           <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.75rem" }}>
             {t("sidebar_usp_title")}
           </div>
         )}
-        {(Array.isArray(usps) ? usps : []).map((b, i) => (
+        {features.map((b, i) => (
           <div key={i} style={{ display:"flex", gap:"0.5rem", alignItems:"flex-start", marginBottom:"0.5rem" }}>
             <span style={{ color:C.red, fontSize:"0.875rem", marginTop:2, flexShrink:0 }}>✓</span>
             <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy }}>{b}</span>
@@ -174,14 +215,13 @@ export function RegSidebar({ planName, planPrice }) {
 
       {/* Kom je er niet uit */}
       <div className="reg-sidebar-card" style={{ background:C.gray50 }}>
-        <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.75rem", fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.75rem" }}>{t("sidebar_help_title")}</div>
+        <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", fontWeight:600, color:C.navy, marginBottom:"0.75rem" }}>{t("sidebar_help_title")}</div>
         <div style={{ display:"flex", alignItems:"center", gap:"0.75rem" }}>
           <div style={{ width:40, height:40, borderRadius:"50%", flexShrink:0, background:C.gray200, display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.7 0 4-1.8 4-4s-1.3-4-4-4-4 1.8-4 4 1.3 4 4 4zm0 2c-4 0-6 2-6 3.5h12c0-1.5-2-3.5-6-3.5z" fill="#8A8A82"/></svg>
           </div>
           <div>
-            <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy, fontWeight:500 }}>{t("sidebar_help_cta")}</div>
-            <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.8rem", color:C.gray500 }}>{t("sidebar_help_sub")}</div>
+            <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray700 }}>{t("sidebar_help_cta")}</div>
           </div>
         </div>
       </div>
