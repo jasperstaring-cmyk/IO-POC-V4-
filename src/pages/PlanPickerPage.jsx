@@ -40,9 +40,9 @@ export default function PlanPickerPage({ onSelectPlan, onSwitchToBusiness, onBac
   const { t } = useLang()
 
   const PLANS = [
-    { id:"freemium", name:"Freemium", sub:t("plan_freemium_sub"), priceLabel:t("plan_freemium_price"), priceSuffix:"",                  cta:t("plan_freemium_cta"), ctaNote:t("plan_freemium_note"), features:t("plan_freemium_features")||[] },
-    { id:"trial",    name:"Pro Trial", sub:t("plan_trial_sub"),   priceLabel:t("plan_trial_price"),    priceSuffix:t("plan_trial_suffix"), cta:t("plan_trial_cta"),   ctaNote:t("plan_trial_note"),   features:t("plan_trial_features")||[]   },
-    { id:"pro",      name:"Pro",       sub:t("plan_pro_sub"),     priceLabel:t("plan_pro_price"),      priceSuffix:t("plan_pro_suffix"),   cta:t("plan_pro_cta"),     ctaNote:t("plan_pro_note"),     features:t("plan_pro_features")||[]     },
+    { id:"freemium", name:t("plan_freemium_name"), sub:t("plan_freemium_sub"), priceLabel:t("plan_freemium_price"), priceSuffix:"",                  priceNote:null,                   cta:t("plan_freemium_cta"), ctaNote:t("plan_freemium_note"), features:t("plan_freemium_features")||[] },
+    { id:"trial",    name:t("plan_trial_name"),    sub:t("plan_trial_sub"),   priceLabel:t("plan_trial_price"),    priceSuffix:t("plan_trial_suffix"), priceNote:null,                   cta:t("plan_trial_cta"),   ctaNote:t("plan_trial_note"),   features:t("plan_trial_features")||[]   },
+    { id:"pro",      name:t("plan_pro_name"),      sub:t("plan_pro_sub"),     priceLabel:t("plan_pro_price"),      priceSuffix:t("plan_pro_suffix"),   priceNote:t("plan_pro_price_note"), cta:t("plan_pro_cta"),     ctaNote:t("plan_pro_note"),     features:t("plan_pro_features")||[]     },
   ]
 
   function handleToggle(type) {
@@ -67,7 +67,7 @@ export default function PlanPickerPage({ onSelectPlan, onSwitchToBusiness, onBac
         </div>
       </header>
 
-      <div style={{ maxWidth:960, margin:"0 auto", padding:"3rem 1.5rem 5rem" }}>
+      <div style={{ maxWidth:1060, margin:"0 auto", padding:"3rem 1.5rem 0" }}>
         {/* Header */}
         <div style={{ textAlign:"center", marginBottom:"2rem" }}>
           <div style={{ display:"inline-block", background:C.gray100, borderRadius:99, padding:"0.3rem 1rem", fontFamily:"var(--font-sans)", fontSize:"0.8rem", fontWeight:600, color:C.gray500, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:"1rem" }}>{t("sp_badge")}</div>
@@ -78,10 +78,8 @@ export default function PlanPickerPage({ onSelectPlan, onSwitchToBusiness, onBac
           <PlanTypeToggle active="personal" onChange={handleToggle} />
         </div>
 
-        <p style={{ textAlign:"center", fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500, marginBottom:"2rem", lineHeight:"var(--lh-body)" }}>{t("sp_personal_intro")}</p>
-
         {/* Plan kaarten */}
-        <div className="sub-cards">
+        <div className="sub-cards" style={{ marginTop:"2rem" }}>
           {PLANS.map(p => (
             <div key={p.id} className="sub-card">
               <div className="sub-card-zone-name">
@@ -91,6 +89,11 @@ export default function PlanPickerPage({ onSelectPlan, onSwitchToBusiness, onBac
               <div className="sub-card-zone-price">
                 <span className="sub-card-price">{p.priceLabel}</span>
                 {p.priceSuffix && <span className="sub-card-price-suffix"> {p.priceSuffix}</span>}
+                {p.priceNote && (
+                  <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.8rem", color:C.gray500, marginTop:"0.375rem", lineHeight:"var(--lh-body)" }}>
+                    {p.priceNote}
+                  </div>
+                )}
               </div>
               <div className="sub-card-zone-cta">
                 <button className="btn-red" onClick={() => onSelectPlan(p.id)}>{p.cta}</button>
@@ -105,6 +108,21 @@ export default function PlanPickerPage({ onSelectPlan, onSwitchToBusiness, onBac
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Trust footer */}
+      <div style={{ background:C.gray50, marginTop:"3rem", padding:"3rem 1.5rem" }}>
+        <div style={{ maxWidth:720, margin:"0 auto", textAlign:"center" }}>
+          <h2 style={{ fontFamily:"var(--font-serif)", fontSize:"clamp(1.25rem,3vw,1.75rem)", fontWeight:700, color:C.navy, lineHeight:"var(--lh-heading)", marginBottom:"1rem" }}>
+            {t("sp_trust_title")}
+          </h2>
+          <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.5rem" }}>
+            {t("sp_trust_body")}
+          </p>
+          <button className="btn-outline" style={{ padding:"0.875rem 2rem" }} onClick={onSwitchToBusiness}>
+            {t("sp_trust_cta")}
+          </button>
         </div>
       </div>
     </div>

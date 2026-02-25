@@ -10,9 +10,9 @@ import IOLogo from '../components/IOLogo.jsx'
 function planMeta(planId, t) {
   if (!planId) return {}
   const map = {
-    freemium: { name: "Freemium",   price: null,                          cta: null,                                                        features: t("plan_freemium_features") || [] },
-    trial:    { name: "Pro Trial",   price: t("plan_trial_price") + " " + (t("plan_trial_suffix") || ""), cta: t("sidebar_trial_cta"), features: t("plan_trial_features") || [] },
-    pro:      { name: "Pro",         price: t("plan_pro_price") + " " + (t("plan_pro_suffix") || ""),     cta: null,                                                        features: t("plan_pro_features") || [] },
+    freemium: { name: t("plan_freemium_name"),  price: null,                          cta: null,                                                        features: t("plan_freemium_features") || [] },
+    trial:    { name: t("plan_trial_name"),     price: t("plan_trial_price") + " " + (t("plan_trial_suffix") || ""), cta: t("sidebar_trial_cta"), features: t("plan_trial_features") || [] },
+    pro:      { name: t("plan_pro_name"),       price: t("plan_pro_price") + " " + (t("plan_pro_suffix") || ""),     cta: null,                                                        features: t("plan_pro_features") || [] },
   }
   return map[planId] || {}
 }

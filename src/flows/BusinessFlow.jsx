@@ -1,53 +1,104 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
-import { SEGMENTS, PRODUCT_C_VARIANTS, JOB_ROLES } from '../data.js'
+import { SEGMENTS, JOB_ROLES } from '../data.js'
 import { TopProgressBar, RegSidebar, SelectionRow, EmailChip, BackButton, AuthNav } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
+import IOLogo from '../components/IOLogo.jsx'
 
+/* ─── Segment → pricing logic ──────────────────────────────────────────── */
+const FREE_SEGMENTS = ["wealth", "institutional"]
+function isFreePermanent(segId) { return FREE_SEGMENTS.includes(segId) }
+
+function getSidebarMeta(segId) {
+  const features = [
+    "Onbeperkte toegang tot alle redactionele content",
+    "Alle artikelen, analyses en expertbijdragen",
+    "Eén gedeelde omgeving met gebruikersbeheer",
+    "Eenvoudig collega's toevoegen of verwijderen",
+  ]
+  if (isFreePermanent(segId)) {
+    return { name:"Business", price:"Gratis", priceSuffix:"doorlopend", cta:"Gratis toegang — onder voorbehoud van validatie", features }
+  }
+  return { name:"Business", price:"Gratis", priceSuffix:"6 maanden", cta:"6 maanden gratis proefperiode", features }
+}
+
+/* ─── 2-year trial check (demo): e-mails starting with "trial@" ────── */
+function hadRecentTrial(email) { return email.toLowerCase().startsWith("trial@") }
+
+/* ─── Component ────────────────────────────────────────────────────────── */
 export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
   const { t } = useLang()
-  const [step, setStep]           = useState("email")
-  const [email, setEmail]         = useState("")
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName]   = useState("")
-  const [jobRole, setJobRole]     = useState("")
-  const [password, setPassword]   = useState("")
-  const [segment, setSegment]     = useState(null)
-  const [orgType, setOrgType]     = useState(null)
-  const [variant, setVariant]     = useState(null)
-  const [userCount, setUserCount] = useState("")
-  const [company, setCompany]     = useState({ name:"", street:"", number:"", zip:"", city:"", country:"NL", kvk:"", vat:"" })
+  const [step, setStep]             = useState("email")
+  const [email, setEmail]           = useState("")
+  const [firstName, setFirstName]   = useState("")
+  const [lastName, setLastName]     = useState("")
+  const [jobRole, setJobRole]       = useState("")
+  const [password, setPassword]     = useState("")
+  const [segment, setSegment]       = useState(null)
+  const [orgType, setOrgType]       = useState(null)
+  const [company, setCompany]       = useState({ kvk:"", name:"", street:"", number:"", addition:"", zip:"", city:"", country:"NL", vat:"" })
   const [inviteEmails, setInviteEmails] = useState(["",""])
+  const [agreed, setAgreed]         = useState(false)
 
-  const STEP_NUM = { email:1, segment:2, type:3, product_a_info:4, product_c_variant:4, company:5, kvk_check:5, kvk_degraded:5, invite:6, done:6 }
-  const TOTAL    = 6
-  const curr     = STEP_NUM[step] || 1
+  const STEPS = ["email","trial_blocked","segment","type","company","overview","invite","done"]
+  const STEP_NUM = { email:1, trial_blocked:1, segment:2, type:3, company:4, overview:5, invite:6, done:7 }
+  const TOTAL = 7
+  const curr  = STEP_NUM[step] || 1
 
   const selectedSegment = SEGMENTS.find(s => s.id === segment?.id)
-  const isPlaceholder   = selectedSegment?.product === "placeholder"
+  const sidebar = segment ? getSidebarMeta(segment.id) : {}
+
+  function handleCompanyChange(f, v) { setCompany(prev => ({ ...prev, [f]: v })) }
+
+  function handleEmailSubmit(e) {
+    e.preventDefault()
+    if (hadRecentTrial(email)) { setStep("trial_blocked"); return }
+    setStep("segment")
+  }
 
   function handleSegmentNext() {
     if (!segment) return
-    if (isPlaceholder) { alert(`POC: De flow voor "${segment.name}" wordt in een volgende iteratie uitgewerkt.`); return }
-    setOrgType(null); setStep("type")
+    if (selectedSegment?.types?.length > 0) { setOrgType(null); setStep("type") }
+    else setStep("company")
   }
 
   function handleTypeNext() {
     if (!orgType) return
-    if (segment.id === "wealth") setStep("product_a_info")
-    else setStep("product_c_variant")
+    setStep("company")
   }
 
-  function handleCompanyChange(field, val) {
-    setCompany(prev => ({ ...prev, [field]: val }))
+  /* ── Done page (full-width, no sidebar) ────────────────────────────── */
+  if (step === "done") {
+    return (
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", minHeight:"100vh" }}>
+        <div style={{ padding:"3rem 4rem", display:"flex", flexDirection:"column", justifyContent:"center", background:C.white, position:"relative" }}>
+          <div style={{ position:"absolute", top:"2.5rem", left:"3rem" }}><IOLogo size={28} /></div>
+          <div style={{ marginTop:"2rem" }}>
+            <h1 style={{ fontFamily:"var(--font-serif)", fontSize:"clamp(2rem,4vw,3rem)", fontWeight:700, color:C.navy, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", marginBottom:"0.75rem" }}>
+              Welkom bij Investment Officer
+            </h1>
+            <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, marginBottom:"1rem", lineHeight:"var(--lh-body)" }}>
+              Uw Business regeling voor <strong>{company.name || "uw organisatie"}</strong> is geactiveerd.
+              {isFreePermanent(segment?.id)
+                ? " Als organisatie in het segment " + (segment?.name || "") + " heeft u gratis doorlopende toegang, onder voorbehoud van validatie."
+                : " Uw organisatie heeft 6 maanden gratis toegang. Daarna ontvangt u een aanbieding op maat."
+              }
+            </p>
+            <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.gray500, marginBottom:"2rem", fontStyle:"italic" }}>
+              U ontvangt een bevestiging per e-mail op <strong>{email}</strong>.
+            </p>
+            <div style={{ display:"flex", gap:"1rem" }}>
+              <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>Naar de website</button>
+              <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>Naar mijn dashboard</button>
+            </div>
+          </div>
+        </div>
+        <div style={{ position:"relative", overflow:"hidden", background:`linear-gradient(135deg,${C.navy},#1B3A5C)` }}>
+          <img src="/images/beeld_onboarding_welcome.png" alt="" style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} onError={e => { e.target.style.display="none" }} />
+        </div>
+      </div>
+    )
   }
-
-  function handleKvkValidation(pass) {
-    if (pass) setStep("invite")
-    else setStep("kvk_degraded")
-  }
-
-  const xlPrice = userCount ? Math.max(16, parseInt(userCount) || 16) * 108 : null
 
   return (
     <div className="reg-layout">
@@ -56,15 +107,16 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
       <div className="reg-container">
         <div className="reg-main">
 
-          {/* ── Stap 1: Gegevens ── */}
+          {/* ── STAP 1: E-mail + Profiel ── */}
           {step === "email" && (
             <>
               <h2 className="reg-step-title">{t("bf_email_title")}</h2>
               <p className="reg-step-sub">{t("bf_email_sub")}</p>
               <div className="demo-hint">
-                <strong>Demo:</strong> Segment Wealth Management → Product A · KvK <strong>99…</strong> → Product B · Asset Management → Product C
+                <strong>Demo:</strong> Gebruik <code>trial@bedrijf.nl</code> om de 2-jaar blokkade te testen.
+                Wealth / Institutional → gratis doorlopend · Overige segmenten → 6 maanden gratis.
               </div>
-              <form onSubmit={e => { e.preventDefault(); setStep("segment") }}>
+              <form onSubmit={handleEmailSubmit}>
                 <div className="input-group">
                   <label className="input-label">{t("bf_email_label")}</label>
                   <input className="input-field" type="email" placeholder={t("bf_email_placeholder")} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
@@ -90,12 +142,28 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                   {t("pf_privacy_and")}{" "}
                   <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button">{t("pf_privacy_link")}.</button>
                 </p>
-                <button className="btn-primary btn-full" type="submit">{t("bf_next")}</button>
+                <button className="btn-green btn-full" type="submit">{t("bf_next")}</button>
               </form>
             </>
           )}
 
-          {/* ── Stap 2: Segment ── */}
+          {/* ── TRIAL BLOKKADE ── */}
+          {step === "trial_blocked" && (
+            <>
+              <h2 className="reg-step-title">Geen nieuwe proefperiode beschikbaar</h2>
+              <EmailChip email={email} onEdit={() => setStep("email")} />
+              <div className="alert alert-error">
+                <strong>Uw organisatie heeft in de afgelopen 2 jaar al een gratis proefperiode gehad.</strong><br/>
+                U kunt geen nieuwe gratis Business regeling starten. Neem contact met ons op voor een abonnement op maat.
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem", marginTop:"1rem" }}>
+                <button className="btn-primary btn-full" onClick={() => alert("POC: Hier wordt u doorgestuurd naar het contactformulier.")}>Neem contact op</button>
+                <button className="btn-secondary btn-full" onClick={() => setStep("email")}>Probeer een ander e-mailadres</button>
+              </div>
+            </>
+          )}
+
+          {/* ── STAP 2: Segment ── */}
           {step === "segment" && (
             <>
               <h2 className="reg-step-title">{t("bf_segment_title")}</h2>
@@ -103,14 +171,22 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               {SEGMENTS.map(s => (
                 <SelectionRow key={s.id} selected={segment?.id === s.id} onSelect={() => setSegment(s)} name={s.name} desc={s.desc} />
               ))}
+              {segment && (
+                <div className="alert alert-info" style={{ marginTop:"1rem", fontSize:"0.85rem" }}>
+                  {isFreePermanent(segment.id)
+                    ? `Organisaties in ${segment.name} komen in aanmerking voor gratis doorlopende toegang (onder voorbehoud van validatie door onze redactie).`
+                    : `Organisaties in ${segment.name} krijgen 6 maanden gratis toegang. Daarna volgt een aanbieding op maat.`
+                  }
+                </div>
+              )}
               <div className="reg-nav-bar">
                 <BackButton onClick={() => setStep("email")} />
-                <button className="btn-primary btn-full" onClick={handleSegmentNext} disabled={!segment}>{t("bf_next")}</button>
+                <button className="btn-green btn-full" onClick={handleSegmentNext} disabled={!segment}>{t("bf_next")}</button>
               </div>
             </>
           )}
 
-          {/* ── Stap 3: Type ── */}
+          {/* ── STAP 3: Organisatietype ── */}
           {step === "type" && selectedSegment && (
             <>
               <h2 className="reg-step-title">{t("bf_type_title")}</h2>
@@ -120,193 +196,162 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               ))}
               <div className="reg-nav-bar">
                 <BackButton onClick={() => setStep("segment")} />
-                <button className="btn-primary btn-full" onClick={handleTypeNext} disabled={!orgType}>{t("bf_next")}</button>
+                <button className="btn-green btn-full" onClick={handleTypeNext} disabled={!orgType}>{t("bf_next")}</button>
               </div>
             </>
           )}
 
-          {/* ── Stap 4a: Product A ── */}
-          {step === "product_a_info" && (
-            <>
-              <h2 className="reg-step-title">{t("bf_product_a_title")}</h2>
-              <p className="reg-step-sub">{t("bf_product_a_sub")}</p>
-              <div className="alert alert-success">
-                <strong>{t("bf_product_a_alert")}</strong><br/>{t("bf_product_a_body")}
-              </div>
-              <div style={{ border:`1px solid ${C.gray200}`, borderRadius:8, padding:"1.25rem 1.5rem", marginBottom:"1.5rem" }}>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.75rem" }}>{t("bf_what_you_get")}</div>
-                {(t("bf_product_a_features") || []).map((f,i) => (
-                  <div key={i} style={{ display:"flex", gap:"0.5rem", marginBottom:"0.4rem" }}>
-                    <span style={{ color:C.green }}>✓</span>
-                    <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy }}>{f}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="alert alert-warning" style={{ fontSize:"0.85rem" }}>
-                <strong>{t("lang") === "en" ? "Please note:" : "Let op:"}</strong> {t("bf_product_a_warn")}
-              </div>
-              <div className="reg-nav-bar">
-                <BackButton onClick={() => setStep("type")} />
-                <button className="btn-primary btn-full" onClick={() => setStep("company")}>{t("bf_product_a_next")}</button>
-              </div>
-            </>
-          )}
-
-          {/* ── Stap 4b: Product C ── */}
-          {step === "product_c_variant" && (
-            <>
-              <h2 className="reg-step-title">{t("bf_product_c_title")}</h2>
-              <p className="reg-step-sub">{t("bf_product_c_sub")}</p>
-              {PRODUCT_C_VARIANTS.map(v => (
-                <div key={v.id}>
-                  <SelectionRow selected={variant?.id === v.id} onSelect={() => setVariant(v)} name={`${v.label} — ${v.users}`} right={v.priceLabel + " /" + t("bf_per_year")} />
-                  {v.id === "XL" && variant?.id === "XL" && (
-                    <div style={{ margin:"-0.25rem 0 0.625rem 2.75rem", padding:"0.875rem 1rem", background:C.gray50, borderRadius:6, border:`1px solid ${C.gray200}` }}>
-                      <label className="input-label">{t("bf_product_c_users")}</label>
-                      <input className="input-field" type="number" min="16" placeholder="16+" value={userCount} onChange={e => setUserCount(e.target.value)} style={{ maxWidth:180, marginTop:"0.25rem" }} />
-                      {xlPrice && (
-                        <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy, marginTop:"0.5rem" }}>
-                          {t("bf_product_c_price")}: <strong>€ {xlPrice.toLocaleString("nl-NL")},–</strong> / {t("bf_per_year")}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-              <div className="reg-nav-bar">
-                <BackButton onClick={() => setStep("type")} />
-                <button className="btn-primary btn-full" onClick={() => setStep("company")} disabled={!variant}>{t("bf_next_company")}</button>
-              </div>
-            </>
-          )}
-
-          {/* ── Stap 5: Bedrijfsgegevens ── */}
+          {/* ── STAP 4: Bedrijfsgegevens ── */}
           {step === "company" && (
             <>
-              <h2 className="reg-step-title">{t("bf_company_title")}</h2>
-              <p className="reg-step-sub">{t("bf_company_sub")}</p>
-              <form onSubmit={e => { e.preventDefault(); setStep("kvk_check") }}>
+              <h2 className="reg-step-title">Bedrijfsgegevens</h2>
+              <p className="reg-step-sub">Vul de gegevens van uw organisatie in.</p>
+              <form onSubmit={e => { e.preventDefault(); setStep("overview") }}>
                 <div className="input-group">
-                  <label className="input-label">{t("bf_company_name")}</label>
-                  <input className="input-field" type="text" placeholder={t("bf_company_name_ph")} value={company.name} onChange={e => handleCompanyChange("name", e.target.value)} required />
+                  <label className="input-label">KvK-nummer</label>
+                  <input className="input-field" type="text" placeholder="12345678" value={company.kvk} onChange={e => handleCompanyChange("kvk", e.target.value)} required />
                 </div>
-                <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:"0 1rem" }}>
-                  <div className="input-group"><label className="input-label">{t("bf_street")}</label><input className="input-field" type="text" placeholder={t("bf_street")} value={company.street} onChange={e => handleCompanyChange("street", e.target.value)} required /></div>
-                  <div className="input-group"><label className="input-label">{t("bf_number")}</label><input className="input-field" type="text" placeholder="Nr." value={company.number} onChange={e => handleCompanyChange("number", e.target.value)} required /></div>
+                <div className="input-group">
+                  <label className="input-label">Bedrijfsnaam</label>
+                  <input className="input-field" type="text" placeholder="Bedrijfsnaam" value={company.name} onChange={e => handleCompanyChange("name", e.target.value)} required />
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr", gap:"0 1rem" }}>
+                  <div className="input-group"><label className="input-label">Straatnaam</label><input className="input-field" type="text" placeholder="Straatnaam" value={company.street} onChange={e => handleCompanyChange("street", e.target.value)} required /></div>
+                  <div className="input-group"><label className="input-label">Huisnr.</label><input className="input-field" type="text" placeholder="12" value={company.number} onChange={e => handleCompanyChange("number", e.target.value)} required /></div>
+                  <div className="input-group"><label className="input-label">Toevoeging</label><input className="input-field" type="text" placeholder="A" value={company.addition} onChange={e => handleCompanyChange("addition", e.target.value)} /></div>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:"0 1rem" }}>
-                  <div className="input-group"><label className="input-label">{t("bf_zip")}</label><input className="input-field" type="text" placeholder="1234 AB" value={company.zip} onChange={e => handleCompanyChange("zip", e.target.value)} required /></div>
-                  <div className="input-group"><label className="input-label">{t("bf_city")}</label><input className="input-field" type="text" placeholder={t("bf_city")} value={company.city} onChange={e => handleCompanyChange("city", e.target.value)} required /></div>
+                  <div className="input-group"><label className="input-label">Postcode</label><input className="input-field" type="text" placeholder="0000 AA" value={company.zip} onChange={e => handleCompanyChange("zip", e.target.value)} required /></div>
+                  <div className="input-group"><label className="input-label">Stad</label><input className="input-field" type="text" placeholder="Stad" value={company.city} onChange={e => handleCompanyChange("city", e.target.value)} required /></div>
                 </div>
                 <div className="input-group">
-                  <label className="input-label">{t("bf_country")}</label>
+                  <label className="input-label">Land</label>
                   <select className="input-field" value={company.country} onChange={e => handleCompanyChange("country", e.target.value)}>
-                    {["NL","BE","DE","FR","LU"].map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="NL">Nederland</option>
+                    <option value="BE">België</option>
+                    <option value="DE">Duitsland</option>
+                    <option value="FR">Frankrijk</option>
+                    <option value="LU">Luxemburg</option>
                   </select>
                 </div>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
-                  <div className="input-group"><label className="input-label">{t("bf_kvk")}</label><input className="input-field" type="text" placeholder="12345678" value={company.kvk} onChange={e => handleCompanyChange("kvk", e.target.value)} required /></div>
-                  <div className="input-group"><label className="input-label">{t("bf_vat")}</label><input className="input-field" type="text" placeholder="NL123456789B01" value={company.vat} onChange={e => handleCompanyChange("vat", e.target.value)} required /></div>
+                <div className="input-group">
+                  <label className="input-label">BTW-nummer</label>
+                  <input className="input-field" type="text" placeholder="NL123456789B01" value={company.vat} onChange={e => handleCompanyChange("vat", e.target.value)} />
                 </div>
                 <div className="reg-nav-bar">
-                  <BackButton onClick={() => setStep(segment?.id === "wealth" ? "product_a_info" : "product_c_variant")} />
-                  <button className="btn-primary btn-full" type="submit">{t("bf_validate")}</button>
+                  <BackButton onClick={() => setStep(selectedSegment?.types?.length > 0 ? "type" : "segment")} />
+                  <button className="btn-green btn-full" type="submit">Verder</button>
                 </div>
               </form>
             </>
           )}
 
-          {/* ── KvK validatie ── */}
-          {step === "kvk_check" && (
+          {/* ── STAP 5: Overzicht ── */}
+          {step === "overview" && (
             <>
-              <h2 className="reg-step-title">{t("bf_kvk_title")}</h2>
-              <p className="reg-step-sub">{t("bf_kvk_sub")}</p>
-              <div className="alert alert-info" style={{ display:"flex", alignItems:"center", gap:"0.75rem" }}>
-                <span style={{ fontSize:"1.25rem" }}>🔍</span>
-                <span>KvK: <strong>{company.kvk}</strong> — VAT: <strong>{company.vat}</strong></span>
+              <h2 className="reg-step-title">Overzicht</h2>
+              <p className="reg-step-sub">Controleer uw gegevens en bevestig uw aanmelding.</p>
+
+              {/* Persoonlijke gegevens */}
+              <div style={{ border:`1px solid ${C.gray200}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"0.75rem" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.5rem" }}>
+                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500 }}>1. Uw gegevens</span>
+                  <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("email")}>Aanpassen</button>
+                </div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, lineHeight:1.6 }}>
+                  {firstName} {lastName}<br/>{email}<br/>{jobRole}
+                </div>
               </div>
-              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, marginBottom:"1.5rem", lineHeight:"var(--lh-body)" }}>{t("bf_kvk_simulate")}</p>
-              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={() => handleKvkValidation(true)}>
-                  {t("bf_kvk_pass")} {segment?.id === "wealth" ? "Product A (24 mnd)" : `Product C ${variant?.label || ""}`}
-                </button>
-                {segment?.id === "wealth" && (
-                  <button className="btn-secondary btn-full" onClick={() => handleKvkValidation(false)}>{t("bf_kvk_fail")}</button>
-                )}
+
+              {/* Organisatie */}
+              <div style={{ border:`1px solid ${C.gray200}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"0.75rem" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.5rem" }}>
+                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500 }}>2. Uw organisatie</span>
+                  <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("company")}>Aanpassen</button>
+                </div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, lineHeight:1.6 }}>
+                  {company.name}<br/>
+                  {company.street} {company.number}{company.addition ? ` ${company.addition}` : ""}, {company.zip} {company.city}<br/>
+                  KvK: {company.kvk}{company.vat ? ` · BTW: ${company.vat}` : ""}
+                </div>
+              </div>
+
+              {/* Segment & type */}
+              <div style={{ border:`1px solid ${C.gray200}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"0.75rem" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.5rem" }}>
+                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500 }}>3. Segment & type</span>
+                  <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("segment")}>Aanpassen</button>
+                </div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, lineHeight:1.6 }}>
+                  {segment?.name || "–"}{orgType ? ` — ${orgType.name}` : ""}
+                </div>
+              </div>
+
+              {/* Regeling */}
+              <div style={{ background:"rgba(78,213,150,0.08)", border:`1.5px solid ${C.green}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"1.5rem" }}>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.green, marginBottom:"0.5rem" }}>Uw regeling</div>
+                <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy, marginBottom:"0.25rem" }}>
+                  {isFreePermanent(segment?.id) ? "Gratis doorlopende toegang" : "6 maanden gratis toegang"}
+                </div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500, lineHeight:"var(--lh-body)" }}>
+                  {isFreePermanent(segment?.id)
+                    ? "Als organisatie in " + (segment?.name || "") + " komt u in aanmerking voor gratis doorlopende toegang tot Investment Officer. Wij behouden het recht om te valideren of uw organisatie aan onze criteria voldoet."
+                    : "Uw organisatie krijgt 6 maanden gratis toegang tot Investment Officer. Na afloop van de proefperiode ontvangt u een aanbieding op maat."
+                  }
+                </div>
+              </div>
+
+              {/* Voorwaarden checkbox */}
+              <label style={{ display:"flex", gap:"0.75rem", alignItems:"flex-start", marginBottom:"1.5rem", cursor:"pointer" }}>
+                <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ marginTop:3, accentColor:C.green }} />
+                <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray700, lineHeight:"var(--lh-body)" }}>
+                  Ik ga akkoord met de <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button">algemene voorwaarden</button> en het <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button">privacy statement</button>.
+                </span>
+              </label>
+
+              <div className="reg-nav-bar">
+                <BackButton onClick={() => setStep("company")} />
+                <button className="btn-red btn-full" onClick={() => setStep("invite")} disabled={!agreed}>Account aanmaken</button>
               </div>
             </>
           )}
 
-          {/* ── Degradatie ── */}
-          {step === "kvk_degraded" && (
-            <>
-              <h2 className="reg-step-title">{t("bf_degraded_title")}</h2>
-              <EmailChip email={email} onEdit={() => {}} />
-              <div className="alert alert-warning">
-                <strong>{t("bf_degraded_alert")}</strong><br/>{t("bf_degraded_body")}
-              </div>
-              <div style={{ border:`1px solid ${C.gray200}`, borderRadius:8, padding:"1.25rem 1.5rem", marginBottom:"1.5rem" }}>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.5rem" }}>{t("bf_degraded_plan")}</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"1.25rem", fontWeight:800, color:C.navy, marginBottom:"0.25rem" }}>{t("bf_degraded_name")}</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500, marginBottom:"0.75rem" }}>{t("bf_degraded_desc")}</div>
-                {(t("bf_degraded_features") || []).map((f,i) => (
-                  <div key={i} style={{ display:"flex", gap:"0.5rem", marginBottom:"0.375rem" }}>
-                    <span style={{ color:C.green }}>✓</span>
-                    <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy }}>{f}</span>
-                  </div>
-                ))}
-              </div>
-              <button className="btn-primary btn-full" onClick={() => setStep("invite")}>{t("bf_degraded_cta")}</button>
-            </>
-          )}
-
-          {/* ── Uitnodigen ── */}
+          {/* ── STAP 6: Collega's uitnodigen ── */}
           {step === "invite" && (
             <>
-              <h2 className="reg-step-title">{t("bf_invite_title")}</h2>
-              <p className="reg-step-sub">{t("bf_invite_sub")}</p>
+              <h2 className="reg-step-title">Nodig collega's uit</h2>
+              <p className="reg-step-sub">Uw Business account is aangemaakt. Nodig direct uw collega's uit zodat zij ook toegang krijgen.</p>
               <div className="alert alert-success">
-                <strong>{t("bf_invite_success")}</strong> {company.name || ""}
+                <strong>Uw Business regeling is geactiveerd</strong> voor {company.name || "uw organisatie"}.
               </div>
               {inviteEmails.map((em,i) => (
                 <div key={i} className="input-group">
-                  <label className="input-label">{t("bf_invite_colleague")} {i+1}</label>
-                  <input className="input-field" type="email" placeholder={t("bf_invite_ph")} value={em}
+                  <label className="input-label">Collega {i+1}</label>
+                  <input className="input-field" type="email" placeholder="naam@bedrijf.nl" value={em}
                     onChange={e => { const arr = [...inviteEmails]; arr[i] = e.target.value; setInviteEmails(arr) }} />
                 </div>
               ))}
               <button className="link-btn" style={{ marginBottom:"1.5rem", display:"block" }}
                 onClick={() => setInviteEmails(prev => [...prev, ""])}>
-                {t("bf_invite_add")}
+                + Nog een collega toevoegen
               </button>
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={() => setStep("done")}>{t("bf_invite_send")}</button>
-                <button className="btn-secondary btn-full" onClick={() => setStep("done")}>{t("bf_invite_skip")}</button>
+                <button className="btn-green btn-full" onClick={() => setStep("done")}>Uitnodigingen versturen</button>
+                <button className="btn-secondary btn-full" onClick={() => setStep("done")}>Overslaan, ik doe dit later</button>
               </div>
             </>
           )}
 
-          {/* ── Done ── */}
-          {step === "done" && (
-            <div style={{ textAlign:"center", padding:"1.5rem 0" }}>
-              <div style={{ width:64, height:64, background:C.green, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1.5rem" }}>
-                <svg width="28" height="24" viewBox="0 0 28 24" fill="none"><path d="M2 11L10 19L26 3" stroke={C.navy} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </div>
-              <h2 style={{ fontFamily:"var(--font-sans)", fontSize:"1.75rem", fontWeight:800, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", color:C.navy, marginBottom:"0.5rem" }}>
-                {t("bf_done_title")}
-              </h2>
-              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.5rem" }}>
-                {company.name || "–"} {t("bf_done_body")}
-              </p>
-              <div className="alert alert-success" style={{ textAlign:"left" }}>
-                {t("bf_done_confirm")} <strong>{email}</strong>.
-              </div>
-              <button className="btn-primary btn-full" style={{ marginTop:"1rem" }} onClick={onComplete}>{t("bf_done_cta")}</button>
-            </div>
-          )}
-
         </div>
-        <div className="reg-sidebar"><RegSidebar /></div>
+        <div className="reg-sidebar">
+          <RegSidebar
+            planName={sidebar.name}
+            planPrice={sidebar.price}
+            planPriceSuffix={sidebar.priceSuffix}
+            planFeatures={sidebar.features}
+            planCta={sidebar.cta}
+          />
+        </div>
       </div>
     </div>
   )

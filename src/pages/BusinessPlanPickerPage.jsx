@@ -203,8 +203,8 @@ export default function BusinessPlanPickerPage({ onSelectPlan, onSwitchToPersona
           <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.5rem" }}>
             Investment Officer ondersteunt professionals in asset management, wealth management en institutioneel beleggen met onafhankelijke journalistiek en diepgaande analyses.
           </p>
-          <button className="btn-navy" style={{ padding:"0.875rem 2rem" }}>
-            Neem contact met ons op
+          <button className="btn-outline" style={{ padding:"0.875rem 2rem" }} onClick={onSwitchToPersonal}>
+            Bekijk persoonlijke regelingen voor toegang
           </button>
         </div>
       </div>

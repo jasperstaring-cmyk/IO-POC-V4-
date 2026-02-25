@@ -10,6 +10,7 @@ import OnboardingPage     from './pages/OnboardingPage.jsx'
 import AccountTypeChoice  from './flows/AccountTypeChoice.jsx'
 import PersonalFlow       from './flows/PersonalFlow.jsx'
 import BusinessFlow       from './flows/BusinessFlow.jsx'
+import EnterpriseFlow     from './flows/EnterpriseFlow.jsx'
 import LoginModal         from './flows/LoginModal.jsx'
 
 export default function App() {
@@ -75,13 +76,19 @@ export default function App() {
         <PlanPickerPage onSelectPlan={handleSelectPlan} onSwitchToBusiness={() => setView("bizplans")} onBack={() => setView("choice")} />
       )}
       {view === "bizplans" && (
-        <BusinessPlanPickerPage onSelectPlan={(id) => { setSelectedPlan(id); setView("business") }} onSwitchToPersonal={() => setView("plans")} onBack={() => setView("choice")} />
+        <BusinessPlanPickerPage onSelectPlan={(id) => {
+          setSelectedPlan(id)
+          setView(id === "enterprise" ? "enterprise" : "business")
+        }} onSwitchToPersonal={() => setView("plans")} onBack={() => setView("choice")} />
       )}
       {view === "personal" && (
         <PersonalFlow selectedPlan={selectedPlan} onComplete={handleRegComplete} onBack={() => setView("plans")} onGoLogin={handleGoLogin} />
       )}
       {view === "business" && (
         <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} onGoLogin={handleGoLogin} />
+      )}
+      {view === "enterprise" && (
+        <EnterpriseFlow onComplete={() => setView("article")} onBack={() => setView("bizplans")} />
       )}
       {view === "onboarding" && (
         <OnboardingPage

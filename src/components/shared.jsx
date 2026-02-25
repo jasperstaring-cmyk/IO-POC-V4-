@@ -131,7 +131,7 @@ export function AuthNav({ onBack }) {
 }
 
 // ─── RegSidebar ───────────────────────────────────────────────────────────────
-export function RegSidebar({ planName, planPrice, planFeatures, planCta }) {
+export function RegSidebar({ planName, planPrice, planPriceSuffix, planFeatures, planCta }) {
   const { t } = useLang()
   const usps = t("sidebar_usps")
   const showPlan = planName && planName.length > 0
@@ -182,8 +182,15 @@ export function RegSidebar({ planName, planPrice, planFeatures, planCta }) {
                 <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.65rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.25rem" }}>
                   {t("sidebar_price_label")}
                 </div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"1.75rem", fontWeight:700, color:C.navy, lineHeight:1 }}>
-                  {planPrice}
+                <div style={{ display:"flex", alignItems:"baseline", gap:"0.5rem" }}>
+                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"1.75rem", fontWeight:700, color:C.navy, lineHeight:1 }}>
+                    {planPrice}
+                  </span>
+                  {planPriceSuffix && (
+                    <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500 }}>
+                      {planPriceSuffix}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
