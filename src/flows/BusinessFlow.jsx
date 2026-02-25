@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
-import { SEGMENTS, JOB_ROLES } from '../data.js'
+import { SEGMENTS, JOB_ROLES, BUSINESS_SIZES } from '../data.js'
 import { TopProgressBar, RegSidebar, SelectionRow, EmailChip, BackButton, AuthNav } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
 import IOLogo from '../components/IOLogo.jsx'
@@ -9,17 +9,32 @@ import IOLogo from '../components/IOLogo.jsx'
 const FREE_SEGMENTS = ["wealth", "institutional"]
 function isFreePermanent(segId) { return FREE_SEGMENTS.includes(segId) }
 
-function getSidebarMeta(segId) {
-  const features = [
+function getSidebarMeta(segId, isPaid, chosenSize, xlCount) {
+  const baseFeatures = [
     "Onbeperkte toegang tot alle redactionele content",
     "Alle artikelen, analyses en expertbijdragen",
     "Eén gedeelde omgeving met gebruikersbeheer",
     "Eenvoudig collega's toevoegen of verwijderen",
   ]
-  if (isFreePermanent(segId)) {
-    return { name:"Business", price:"Gratis", priceSuffix:"doorlopend", cta:"Gratis toegang — onder voorbehoud van validatie", features }
+  if (isPaid && chosenSize) {
+    const price = chosenSize.id === "XL"
+      ? `€ ${((xlCount || 16) * (chosenSize.perUser || 9)).toLocaleString("nl-NL")},–`
+      : chosenSize.priceLabel
+    return {
+      name: `Business ${chosenSize.label}`,
+      price: price,
+      priceSuffix: "per maand, jaarlijks gefactureerd",
+      cta: null,
+      features: [...baseFeatures, `${chosenSize.users}`],
+    }
   }
-  return { name:"Business", price:"Gratis", priceSuffix:"6 maanden", cta:"6 maanden gratis proefperiode", features }
+  if (isPaid) {
+    return { name:"Business", price:"Betaald", priceSuffix:"kies een pakket", cta:null, features: baseFeatures }
+  }
+  if (isFreePermanent(segId)) {
+    return { name:"Business", price:"Gratis", priceSuffix:"doorlopend", cta:"Gratis toegang — onder voorbehoud van validatie", features: baseFeatures }
+  }
+  return { name:"Business", price:"Gratis", priceSuffix:"6 maanden", cta:"6 maanden gratis proefperiode", features: baseFeatures }
 }
 
 /* ─── 2-year trial check (demo): e-mails starting with "trial@" ────── */
@@ -40,19 +55,28 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
   const [inviteEmails, setInviteEmails] = useState(["",""])
   const [agreed, setAgreed]         = useState(false)
 
-  const STEPS = ["email","trial_blocked","segment","type","company","overview","invite","done"]
-  const STEP_NUM = { email:1, trial_blocked:1, segment:2, type:3, company:4, overview:5, invite:6, done:7 }
-  const TOTAL = 7
-  const curr  = STEP_NUM[step] || 1
+  // Paid flow states
+  const [isPaidFlow, setIsPaidFlow] = useState(false)
+  const [chosenSize, setChosenSize] = useState(null)
+  const [xlUserCount, setXlUserCount] = useState("")
+
+  // Steps differ based on paid vs free flow
+  // Free:  email → segment → type → company → overview → invite → done
+  // Paid:  email → trial_blocked → size_picker → segment → type → company → overview → payment → invite → done
+  const STEP_NUM_FREE = { email:1, segment:2, type:3, company:4, overview:5, invite:6, done:7 }
+  const STEP_NUM_PAID = { email:1, trial_blocked:1, size_picker:2, segment:3, type:4, company:5, overview:6, payment:7, invite:8, done:9 }
+  const stepMap = isPaidFlow ? STEP_NUM_PAID : STEP_NUM_FREE
+  const TOTAL   = isPaidFlow ? 9 : 7
+  const curr    = stepMap[step] || 1
 
   const selectedSegment = SEGMENTS.find(s => s.id === segment?.id)
-  const sidebar = segment ? getSidebarMeta(segment.id) : {}
+  const sidebar = getSidebarMeta(segment?.id, isPaidFlow, chosenSize, parseInt(xlUserCount) || 16)
 
   function handleCompanyChange(f, v) { setCompany(prev => ({ ...prev, [f]: v })) }
 
   function handleEmailSubmit(e) {
     e.preventDefault()
-    if (hadRecentTrial(email)) { setStep("trial_blocked"); return }
+    if (hadRecentTrial(email)) { setIsPaidFlow(true); setStep("trial_blocked"); return }
     setStep("segment")
   }
 
@@ -67,6 +91,15 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
     setStep("company")
   }
 
+  function handleSizeNext() {
+    if (!chosenSize) return
+    setStep("segment")
+  }
+
+  // XL price calculation
+  const xlCount = parseInt(xlUserCount) || 16
+  const xlPrice = xlCount * (BUSINESS_SIZES.find(s => s.id === "XL")?.perUser || 9)
+
   /* ── Done page (full-width, no sidebar) ────────────────────────────── */
   if (step === "done") {
     return (
@@ -78,11 +111,13 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               Welkom bij Investment Officer
             </h1>
             <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, marginBottom:"1rem", lineHeight:"var(--lh-body)" }}>
-              Uw Business regeling voor <strong>{company.name || "uw organisatie"}</strong> is geactiveerd.
-              {isFreePermanent(segment?.id)
-                ? " Als organisatie in het segment " + (segment?.name || "") + " heeft u gratis doorlopende toegang, onder voorbehoud van validatie."
-                : " Uw organisatie heeft 6 maanden gratis toegang. Daarna ontvangt u een aanbieding op maat."
-              }
+              {isPaidFlow ? (
+                <>Uw Business {chosenSize?.label || ""} regeling voor <strong>{company.name || "uw organisatie"}</strong> is geactiveerd. U heeft nu toegang voor {chosenSize?.users || "uw team"}.</>
+              ) : isFreePermanent(segment?.id) ? (
+                <>Uw Business regeling voor <strong>{company.name || "uw organisatie"}</strong> is geactiveerd. Als organisatie in het segment {segment?.name || ""} heeft u gratis doorlopende toegang, onder voorbehoud van validatie.</>
+              ) : (
+                <>Uw Business regeling voor <strong>{company.name || "uw organisatie"}</strong> is geactiveerd. Uw organisatie heeft 6 maanden gratis toegang. Daarna ontvangt u een aanbieding op maat.</>
+              )}
             </p>
             <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.gray500, marginBottom:"2rem", fontStyle:"italic" }}>
               U ontvangt een bevestiging per e-mail op <strong>{email}</strong>.
@@ -113,8 +148,8 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               <h2 className="reg-step-title">{t("bf_email_title")}</h2>
               <p className="reg-step-sub">{t("bf_email_sub")}</p>
               <div className="demo-hint">
-                <strong>Demo:</strong> Gebruik <code>trial@bedrijf.nl</code> om de 2-jaar blokkade te testen.
-                Wealth / Institutional → gratis doorlopend · Overige segmenten → 6 maanden gratis.
+                <strong>Demo:</strong> Gebruik <code>trial@bedrijf.nl</code> om de 2-jaar blokkade te testen (→ betaalde pakketten).
+                Andere e-mails → gratis flow. Wealth / Institutional = doorlopend gratis · Overige = 6 maanden gratis.
               </div>
               <form onSubmit={handleEmailSubmit}>
                 <div className="input-group">
@@ -147,23 +182,79 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
             </>
           )}
 
-          {/* ── TRIAL BLOKKADE ── */}
+          {/* ── TRIAL BLOKKADE → door naar betaalde pakketten ── */}
           {step === "trial_blocked" && (
             <>
-              <h2 className="reg-step-title">Geen nieuwe proefperiode beschikbaar</h2>
-              <EmailChip email={email} onEdit={() => setStep("email")} />
-              <div className="alert alert-error">
+              <h2 className="reg-step-title">Geen gratis proefperiode beschikbaar</h2>
+              <EmailChip email={email} onEdit={() => { setIsPaidFlow(false); setStep("email") }} />
+              <div className="alert alert-warning" style={{ marginBottom:"1.25rem" }}>
                 <strong>Uw organisatie heeft in de afgelopen 2 jaar al een gratis proefperiode gehad.</strong><br/>
-                U kunt geen nieuwe gratis Business regeling starten. Neem contact met ons op voor een abonnement op maat.
+                Een nieuwe gratis Business regeling is helaas niet mogelijk.
               </div>
-              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem", marginTop:"1rem" }}>
-                <button className="btn-primary btn-full" onClick={() => alert("POC: Hier wordt u doorgestuurd naar het contactformulier.")}>Neem contact op</button>
-                <button className="btn-secondary btn-full" onClick={() => setStep("email")}>Probeer een ander e-mailadres</button>
+              <div style={{ background:"rgba(78,213,150,0.08)", border:`1.5px solid ${C.green}`, borderRadius:10, padding:"1.25rem 1.5rem", marginBottom:"1.5rem" }}>
+                <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.05rem", color:C.navy, marginBottom:"0.5rem" }}>
+                  Wel beschikbaar: betaalde Business regelingen
+                </div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500, lineHeight:"var(--lh-body)" }}>
+                  Met een betaald Business abonnement krijgt uw team direct toegang tot Investment Officer. Kies het pakket dat past bij de omvang van uw team.
+                </div>
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
+                <button className="btn-green btn-full" onClick={() => setStep("size_picker")}>Bekijk betaalde regelingen</button>
+                <button className="btn-secondary btn-full" onClick={() => { setIsPaidFlow(false); setStep("email") }}>Probeer een ander e-mailadres</button>
               </div>
             </>
           )}
 
-          {/* ── STAP 2: Segment ── */}
+          {/* ── STAP 2 (paid): Pakketkeuze S/M/L/XL ── */}
+          {step === "size_picker" && (
+            <>
+              <h2 className="reg-step-title">Kies een Business pakket</h2>
+              <p className="reg-step-sub">Selecteer het pakket dat past bij de omvang van uw team. Alle pakketten geven volledige toegang tot Investment Officer.</p>
+              {BUSINESS_SIZES.map(sz => (
+                <div key={sz.id}>
+                  <SelectionRow
+                    selected={chosenSize?.id === sz.id}
+                    onSelect={() => setChosenSize(sz)}
+                    name={`${sz.label} — ${sz.users}`}
+                    desc={sz.desc}
+                    right={sz.id === "XL" ? (xlUserCount ? `€ ${(xlPrice).toLocaleString("nl-NL")},– /mnd` : sz.priceLabel) : `${sz.priceLabel} /mnd`}
+                  />
+                  {/* XL: extra invoerveld voor aantal gebruikers */}
+                  {sz.id === "XL" && chosenSize?.id === "XL" && (
+                    <div style={{ margin:"-0.25rem 0 0.75rem 2.75rem", padding:"1rem", background:C.gray50, borderRadius:6, border:`1px solid ${C.gray200}` }}>
+                      <label className="input-label">Aantal gebruikers</label>
+                      <input className="input-field" type="number" min="16" placeholder="16+" value={xlUserCount}
+                        onChange={e => setXlUserCount(e.target.value)}
+                        style={{ maxWidth:180, marginTop:"0.25rem" }} />
+                      {xlUserCount && parseInt(xlUserCount) >= 16 && (
+                        <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy, marginTop:"0.5rem" }}>
+                          Totaal: <strong>€ {xlPrice.toLocaleString("nl-NL")},–</strong> per maand · <strong>€ {(xlPrice * 12).toLocaleString("nl-NL")},–</strong> per jaar
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Prijsoverzicht gekozen pakket */}
+              {chosenSize && chosenSize.id !== "XL" && (
+                <div style={{ background:C.gray50, borderRadius:6, border:`1px solid ${C.gray200}`, padding:"1rem 1.25rem", marginTop:"0.5rem", marginBottom:"0.5rem" }}>
+                  <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy }}>
+                    <strong>{chosenSize.label}</strong> · {chosenSize.users}<br/>
+                    {chosenSize.priceLabel} per maand · <strong>€ {(chosenSize.monthlyPrice * 12).toLocaleString("nl-NL")},–</strong> per jaar (excl. btw)
+                  </div>
+                </div>
+              )}
+
+              <div className="reg-nav-bar" style={{ marginTop:"1rem" }}>
+                <BackButton onClick={() => setStep("trial_blocked")} />
+                <button className="btn-green btn-full" onClick={handleSizeNext} disabled={!chosenSize || (chosenSize.id === "XL" && (!xlUserCount || parseInt(xlUserCount) < 16))}>Verder</button>
+              </div>
+            </>
+          )}
+
+          {/* ── STAP: Segment ── */}
           {step === "segment" && (
             <>
               <h2 className="reg-step-title">{t("bf_segment_title")}</h2>
@@ -171,7 +262,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               {SEGMENTS.map(s => (
                 <SelectionRow key={s.id} selected={segment?.id === s.id} onSelect={() => setSegment(s)} name={s.name} desc={s.desc} />
               ))}
-              {segment && (
+              {segment && !isPaidFlow && (
                 <div className="alert alert-info" style={{ marginTop:"1rem", fontSize:"0.85rem" }}>
                   {isFreePermanent(segment.id)
                     ? `Organisaties in ${segment.name} komen in aanmerking voor gratis doorlopende toegang (onder voorbehoud van validatie door onze redactie).`
@@ -180,13 +271,13 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                 </div>
               )}
               <div className="reg-nav-bar">
-                <BackButton onClick={() => setStep("email")} />
+                <BackButton onClick={() => setStep(isPaidFlow ? "size_picker" : "email")} />
                 <button className="btn-green btn-full" onClick={handleSegmentNext} disabled={!segment}>{t("bf_next")}</button>
               </div>
             </>
           )}
 
-          {/* ── STAP 3: Organisatietype ── */}
+          {/* ── STAP: Organisatietype ── */}
           {step === "type" && selectedSegment && (
             <>
               <h2 className="reg-step-title">{t("bf_type_title")}</h2>
@@ -201,7 +292,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
             </>
           )}
 
-          {/* ── STAP 4: Bedrijfsgegevens ── */}
+          {/* ── STAP: Bedrijfsgegevens ── */}
           {step === "company" && (
             <>
               <h2 className="reg-step-title">Bedrijfsgegevens</h2>
@@ -246,7 +337,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
             </>
           )}
 
-          {/* ── STAP 5: Overzicht ── */}
+          {/* ── STAP: Overzicht ── */}
           {step === "overview" && (
             <>
               <h2 className="reg-step-title">Overzicht</h2>
@@ -289,16 +380,41 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
 
               {/* Regeling */}
               <div style={{ background:"rgba(78,213,150,0.08)", border:`1.5px solid ${C.green}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"1.5rem" }}>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.green, marginBottom:"0.5rem" }}>Uw regeling</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy, marginBottom:"0.25rem" }}>
-                  {isFreePermanent(segment?.id) ? "Gratis doorlopende toegang" : "6 maanden gratis toegang"}
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.green, marginBottom:"0.5rem" }}>
+                  {isPaidFlow ? "4. Uw pakket" : "Uw regeling"}
                 </div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500, lineHeight:"var(--lh-body)" }}>
-                  {isFreePermanent(segment?.id)
-                    ? "Als organisatie in " + (segment?.name || "") + " komt u in aanmerking voor gratis doorlopende toegang tot Investment Officer. Wij behouden het recht om te valideren of uw organisatie aan onze criteria voldoet."
-                    : "Uw organisatie krijgt 6 maanden gratis toegang tot Investment Officer. Na afloop van de proefperiode ontvangt u een aanbieding op maat."
-                  }
-                </div>
+                {isPaidFlow ? (
+                  <>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.25rem" }}>
+                      <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy }}>
+                        Business {chosenSize?.label}
+                      </div>
+                      <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("size_picker")}>Aanpassen</button>
+                    </div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, marginBottom:"0.25rem" }}>
+                      {chosenSize?.users}
+                    </div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"1rem", fontWeight:700, color:C.navy }}>
+                      {chosenSize?.id === "XL"
+                        ? `€ ${xlPrice.toLocaleString("nl-NL")},– per maand · € ${(xlPrice * 12).toLocaleString("nl-NL")},– per jaar`
+                        : `${chosenSize?.priceLabel} per maand · € ${((chosenSize?.monthlyPrice || 0) * 12).toLocaleString("nl-NL")},– per jaar`
+                      }
+                    </div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.8rem", color:C.gray500, marginTop:"0.25rem" }}>Excl. btw · Jaarlijks gefactureerd via Stripe</div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy, marginBottom:"0.25rem" }}>
+                      {isFreePermanent(segment?.id) ? "Gratis doorlopende toegang" : "6 maanden gratis toegang"}
+                    </div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500, lineHeight:"var(--lh-body)" }}>
+                      {isFreePermanent(segment?.id)
+                        ? "Als organisatie in " + (segment?.name || "") + " komt u in aanmerking voor gratis doorlopende toegang tot Investment Officer. Wij behouden het recht om te valideren of uw organisatie aan onze criteria voldoet."
+                        : "Uw organisatie krijgt 6 maanden gratis toegang tot Investment Officer. Na afloop van de proefperiode ontvangt u een aanbieding op maat."
+                      }
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Voorwaarden checkbox */}
@@ -311,18 +427,74 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
 
               <div className="reg-nav-bar">
                 <BackButton onClick={() => setStep("company")} />
-                <button className="btn-red btn-full" onClick={() => setStep("invite")} disabled={!agreed}>Account aanmaken</button>
+                <button className="btn-red btn-full" onClick={() => setStep(isPaidFlow ? "payment" : "invite")} disabled={!agreed}>
+                  {isPaidFlow ? "Ga naar betaling" : "Account aanmaken"}
+                </button>
               </div>
             </>
           )}
 
-          {/* ── STAP 6: Collega's uitnodigen ── */}
+          {/* ── STAP (paid): Betaling (Stripe simulatie) ── */}
+          {step === "payment" && (
+            <>
+              <h2 className="reg-step-title">Betaling</h2>
+              <p className="reg-step-sub">Rond uw betaling af om uw Business {chosenSize?.label} regeling te activeren.</p>
+
+              {/* Stripe-achtig kader */}
+              <div style={{ border:`2px solid ${C.gray200}`, borderRadius:10, padding:"2rem", marginBottom:"1.5rem", background:C.white }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"1.5rem", paddingBottom:"1rem", borderBottom:`1px solid ${C.gray200}` }}>
+                  <div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1rem", color:C.navy }}>Business {chosenSize?.label}</div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500 }}>{chosenSize?.users} · {company.name}</div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.25rem", color:C.navy }}>
+                      {chosenSize?.id === "XL"
+                        ? `€ ${(xlPrice * 12).toLocaleString("nl-NL")},–`
+                        : `€ ${((chosenSize?.monthlyPrice || 0) * 12).toLocaleString("nl-NL")},–`
+                      }
+                    </div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.8rem", color:C.gray500 }}>per jaar excl. btw</div>
+                  </div>
+                </div>
+
+                {/* Simulatie velden */}
+                <div className="input-group">
+                  <label className="input-label">Kaartnummer</label>
+                  <input className="input-field" type="text" placeholder="4242 4242 4242 4242" disabled style={{ background:C.gray50 }} />
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
+                  <div className="input-group"><label className="input-label">Vervaldatum</label><input className="input-field" type="text" placeholder="12 / 28" disabled style={{ background:C.gray50 }} /></div>
+                  <div className="input-group"><label className="input-label">CVC</label><input className="input-field" type="text" placeholder="123" disabled style={{ background:C.gray50 }} /></div>
+                </div>
+
+                <div className="demo-hint" style={{ marginTop:"0.5rem" }}>
+                  <strong>Demo:</strong> Dit is een simulatie van het Stripe betaalscherm. In productie wordt hier een embedded Stripe Checkout getoond.
+                </div>
+              </div>
+
+              <div className="reg-nav-bar">
+                <BackButton onClick={() => setStep("overview")} />
+                <button className="btn-red btn-full" onClick={() => setStep("invite")}>
+                  Betaal € {chosenSize?.id === "XL"
+                    ? (xlPrice * 12).toLocaleString("nl-NL")
+                    : ((chosenSize?.monthlyPrice || 0) * 12).toLocaleString("nl-NL")
+                  },– en activeer
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ── STAP: Collega's uitnodigen ── */}
           {step === "invite" && (
             <>
               <h2 className="reg-step-title">Nodig collega's uit</h2>
               <p className="reg-step-sub">Uw Business account is aangemaakt. Nodig direct uw collega's uit zodat zij ook toegang krijgen.</p>
               <div className="alert alert-success">
                 <strong>Uw Business regeling is geactiveerd</strong> voor {company.name || "uw organisatie"}.
+                {isPaidFlow && chosenSize && (
+                  <> U heeft het {chosenSize.label} pakket ({chosenSize.users}).</>
+                )}
               </div>
               {inviteEmails.map((em,i) => (
                 <div key={i} className="input-group">
