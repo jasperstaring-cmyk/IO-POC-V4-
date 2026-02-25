@@ -54,6 +54,56 @@ const ARTICLE = {
     demo_register: "Register / Subscribe",
     demo_reset: "↩ Reset",
   },
+  de: {
+    category: "Geldanlage",
+    title: "Trump setzt mit Zinsobergrenze für Kreditkarten Bankaktien unter Druck",
+    p1: "Die Forderung von Präsident Donald Trump, die Zinsen auf amerikanische Kreditkarten auf 10 Prozent zu begrenzen, setzt Bankaktien unter Druck.",
+    p2: "Analysten großer europäischer Vermögensverwalter reagieren gespalten. Einerseits sehen sie Risiken für die Gewinnmargen, andererseits weisen sie darauf hin, dass eine solche Obergrenze politisch äußerst schwer durchzusetzen wäre.",
+    p3: "Analysten von Goldman Sachs schätzen, dass eine wirksame Zinsobergrenze die Nettozinsmarge großer amerikanischer Retailbanken um 80 bis 120 Basispunkte drücken könnte.",
+    p4: "Gleichzeitig betonen europäische Vermögensverwalter, dass der Vorschlag eher als politisches Signal denn als konkrete politische Maßnahme zu lesen sei.",
+    p5: "Für Portfoliomanager, die in amerikanischen Finanzwerten übergewichtet sind, bleibt die Stimmung nervös. Die Unsicherheit über den regulatorischen Kurs wiegt schwerer als die direkten Auswirkungen dieses Vorschlags.",
+    paywall_title: "Weiterlesen mit Investment Officer",
+    paywall_sub: "Dieser Artikel ist Teil unserer Premium-Inhalte.\nJe nach Branche und Organisation haben Sie möglicherweise kostenlosen Zugang.",
+    paywall_badge: "Kostenloser Zugang\nfür Wealth-\nProfessionals",
+    paywall_login: "Anmelden",
+    paywall_subscribe: "Abonnieren",
+    paywall_items: [
+      "Unbegrenzter Online-Zugang zu allen Premium-Artikeln",
+      "Zugang zu Research-Datenbanken und Marktberichten",
+      "Zugang zu allen Artikeln unserer Experten",
+      "Täglicher Newsletter und Research Bulletin",
+    ],
+    logged_as: "Angemeldet als",
+    org_access: "Sie haben Zugang über das Abonnement Ihrer Organisation.",
+    demo_login: "Anmelden",
+    demo_register: "Registrieren / Abonnieren",
+    demo_reset: "↩ Zurücksetzen",
+  },
+  fr: {
+    category: "Investissement",
+    title: "Trump met les actions bancaires sous pression avec un plafond sur les taux des cartes de crédit",
+    p1: "L'appel du président Donald Trump à plafonner les taux d'intérêt sur les cartes de crédit américaines à 10 pour cent met les actions bancaires sous pression.",
+    p2: "Les analystes des grands gestionnaires d'actifs européens sont divisés. D'un côté, ils voient des risques pour les marges bénéficiaires ; de l'autre, ils soulignent qu'un tel plafond serait politiquement très difficile à mettre en œuvre.",
+    p3: "Les analystes de Goldman Sachs estiment qu'un plafonnement effectif des taux d'intérêt pourrait comprimer la marge nette d'intérêt des grandes banques de détail américaines de 80 à 120 points de base.",
+    p4: "Dans le même temps, les gestionnaires européens soulignent que la proposition doit être lue davantage comme un signal politique que comme une mesure concrète.",
+    p5: "Pour les gestionnaires de portefeuille surpondérés en valeurs financières américaines, le sentiment reste nerveux. L'incertitude quant à la direction réglementaire pèse plus lourd que l'impact direct de cette proposition.",
+    paywall_title: "Continuez à lire avec Investment Officer",
+    paywall_sub: "Cet article fait partie de notre contenu premium.\nSelon votre secteur et votre organisation, vous pouvez bénéficier d'un accès gratuit.",
+    paywall_badge: "Accès gratuit\npour les professionnels\ndu Wealth",
+    paywall_login: "Se connecter",
+    paywall_subscribe: "S'abonner",
+    paywall_items: [
+      "Accès en ligne illimité à tous les articles premium",
+      "Accès aux bases de données de recherche et aux rapports de marché",
+      "Accès à tous les articles de nos experts",
+      "Newsletter quotidienne et Research Bulletin",
+    ],
+    logged_as: "Connecté en tant que",
+    org_access: "Vous avez accès via l'abonnement de votre organisation.",
+    demo_login: "Se connecter",
+    demo_register: "S'inscrire / S'abonner",
+    demo_reset: "↩ Réinitialiser",
+  },
 }
 
 function ArticleImage() {
@@ -111,7 +161,6 @@ export default function ArticlePage({ loggedIn, userEmail, onLogin, onSubscribe,
   return (
     <div style={{ minHeight:"100vh", background:C.white }}>
       <TopNav onLogin={onLogin} onSubscribe={onSubscribe} loggedIn={loggedIn} userEmail={userEmail} onLogout={onLogout} onAccount={onAccount} />
-
       <main style={{ maxWidth:720, margin:"0 auto", padding:"2.5rem 1.5rem 4rem" }}>
         <span className="category-label">{txt.category}</span>
         <h1 className="article-title">{txt.title}</h1>

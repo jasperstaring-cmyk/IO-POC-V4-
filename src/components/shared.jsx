@@ -80,12 +80,12 @@ export function BackButton({ onClick }) {
 }
 
 // ─── LangSwitcher ─────────────────────────────────────────────────────────────
-const LANG_LABELS = { nl: "Nederlands", en: "English" }
+const LANG_LABELS = { nl: "Nederlands", en: "English", de: "Deutsch", fr: "Français" }
 
 export function LangSwitcher() {
   const { lang, setLang } = useLang()
   const [open, setOpen] = useState(false)
-  const LANGS = ["nl", "en"]
+  const LANGS = ["nl", "en", "de", "fr"]
 
   return (
     <div style={{ position:"relative" }}>

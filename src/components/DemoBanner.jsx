@@ -1,46 +1,43 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
-import { useLang } from '../LanguageContext.jsx'
 
 export default function DemoBanner() {
-  const { t } = useLang()
   const [open, setOpen] = useState(false)
-  const isNL = t("lang") === "nl"
 
   const sections = [
     {
-      title: isNL ? "Inloggen" : "Login",
+      title: "Login",
       items: [
-        { code: "demo@abnamro.com", desc: isNL ? "→ SSO/Enterprise flow (ABN AMRO)" : "→ SSO/Enterprise flow (ABN AMRO)" },
-        { code: "demo@aegon.com", desc: isNL ? "→ Wachtwoord login (bestaand account)" : "→ Password login (existing account)" },
-        { code: "user@gmail.com", desc: isNL ? "→ Privé e-mail waarschuwing" : "→ Private email warning" },
-        { code: "user@onbekend.com", desc: isNL ? "→ Geen account gevonden" : "→ No account found" },
+        { code: "demo@abnamro.com", desc: "→ SSO/Enterprise flow (ABN AMRO)" },
+        { code: "demo@aegon.com", desc: "→ Password login (existing account)" },
+        { code: "user@gmail.com", desc: "→ Private email warning" },
+        { code: "user@onbekend.com", desc: "→ No account found" },
       ]
     },
     {
-      title: isNL ? "Registratie — Personal" : "Registration — Personal",
+      title: "Registration — Personal",
       items: [
-        { code: "info@bedrijf.nl", desc: isNL ? "→ Generiek adres geweigerd" : "→ Generic address rejected" },
-        { code: "nieuw@gmail.com", desc: isNL ? "→ Privé-adres waarschuwing" : "→ Private address warning" },
-        { code: "demo@abnamro.com", desc: isNL ? "→ Enterprise domein detectie" : "→ Enterprise domain detection" },
-        { code: "nieuw@wealthpro.com", desc: isNL ? "→ Whitelist domein (snelle registratie)" : "→ Whitelist domain (fast registration)" },
-        { code: "demo@aegon.com", desc: isNL ? "→ Bestaand account detectie" : "→ Existing account detection" },
-        { code: "nieuw@aegon.com", desc: isNL ? "→ Normale registratie flow" : "→ Normal registration flow" },
+        { code: "info@bedrijf.nl", desc: "→ Generic address rejected" },
+        { code: "nieuw@gmail.com", desc: "→ Private address warning" },
+        { code: "demo@abnamro.com", desc: "→ Enterprise domain detection" },
+        { code: "nieuw@wealthpro.com", desc: "→ Whitelist domain (fast registration)" },
+        { code: "demo@aegon.com", desc: "→ Existing account detection" },
+        { code: "nieuw@aegon.com", desc: "→ Normal registration flow" },
       ]
     },
     {
-      title: isNL ? "Registratie — Business" : "Registration — Business",
+      title: "Registration — Business",
       items: [
-        { code: "trial@bedrijf.nl", desc: isNL ? "→ 2-jaar blokkade → betaalde pakketten S/M/L/XL" : "→ 2-year block → paid plans S/M/L/XL" },
-        { code: isNL ? "Wealth / Institutional segment" : "Wealth / Institutional segment", desc: isNL ? "→ Gratis doorlopende toegang" : "→ Free ongoing access" },
-        { code: isNL ? "Overige segmenten" : "Other segments", desc: isNL ? "→ 6 maanden gratis" : "→ 6 months free" },
+        { code: "trial@bedrijf.nl", desc: "→ 2-year block → paid plans S/M/L/XL" },
+        { code: "Wealth / Institutional segment", desc: "→ Free ongoing access" },
+        { code: "Other segments", desc: "→ 6 months free" },
       ]
     },
     {
-      title: isNL ? "Registratie — Business International" : "Registration — Business International",
+      title: "Registration — Business International",
       items: [
-        { code: isNL ? "Segment Wealth of Institutional" : "Wealth or Institutional segment", desc: isNL ? "→ 50% korting op alle pakketten" : "→ 50% discount on all plans" },
-        { code: isNL ? "Overige segmenten" : "Other segments", desc: isNL ? "→ Normaal tarief" : "→ Standard rate" },
+        { code: "Wealth or Institutional segment", desc: "→ 50% discount on all plans" },
+        { code: "Other segments", desc: "→ Standard rate" },
       ]
     },
   ]
@@ -61,7 +58,7 @@ export default function DemoBanner() {
         <span style={{ background:"rgba(255,255,255,0.15)", padding:"0.15rem 0.5rem", borderRadius:4, fontWeight:700, color:C.green }}>
           POC
         </span>
-        {open ? (isNL ? "Demo instructies verbergen" : "Hide demo instructions") : (isNL ? "Demo instructies tonen" : "Show demo instructions")}
+        {open ? "Hide demo instructions" : "Show demo instructions"}
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: open ? "rotate(180deg)" : "none", transition:"transform 0.2s" }}>
           <path d="M3 5l3 3 3-3" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -92,10 +89,7 @@ export default function DemoBanner() {
             ))}
           </div>
           <div style={{ marginTop:"0.75rem", paddingTop:"0.625rem", borderTop:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.4)", fontSize:"0.65rem" }}>
-            {isNL
-              ? "Stripe betaalschermen zijn simulaties. Wachtwoorden worden niet gevalideerd. Alle data is fictief."
-              : "Stripe payment screens are simulations. Passwords are not validated. All data is fictional."
-            }
+            Stripe payment screens are simulations. Passwords are not validated. All data is fictional.
           </div>
         </div>
       )}
