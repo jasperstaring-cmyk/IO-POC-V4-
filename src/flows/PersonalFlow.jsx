@@ -112,10 +112,10 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
               <div className="demo-hint">
                 <strong>Demo:</strong> info@aegon.com · nieuw@gmail.com · demo@abnamro.com · nieuw@abnamro.com · nieuw@wealthpro.com · nieuw@aegon.com
               </div>
-              <form onSubmit={handleEmailSubmit}>
+              <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={handleEmailSubmit}>
                 <div className="input-group">
                   <label className="input-label">{t("pf_email_label")}</label>
-                  <input className="input-field" type="email" placeholder={t("pf_email_placeholder")} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                  <input className="input-field" type="text" inputMode="email" placeholder={t("pf_email_placeholder")} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
                 </div>
                 <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.25rem" }}>
                   {t("pf_email_terms")}{" "}
@@ -199,7 +199,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
               <h2 className="reg-step-title">{t("pf_profile_title")}</h2>
               <p className="reg-step-sub">{t("pf_profile_sub")}</p>
               <EmailChip email={email} onEdit={() => setStep("email")} />
-              <form onSubmit={handleProfileSubmit}>
+              <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={handleProfileSubmit}>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
                   <div className="input-group"><label className="input-label">{t("pf_firstname")}</label><input className="input-field" type="text" placeholder={t("pf_firstname")} value={firstName} onChange={e => setFirstName(e.target.value)} required /></div>
                   <div className="input-group"><label className="input-label">{t("pf_lastname")}</label><input className="input-field" type="text" placeholder={t("pf_lastname")} value={lastName} onChange={e => setLastName(e.target.value)} required /></div>
@@ -211,7 +211,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
                     {JOB_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
-                <div className="input-group"><label className="input-label">{t("pf_password")}</label><input className="input-field" type="password" placeholder={t("pf_password_hint")} value={password} onChange={e => setPassword(e.target.value)} minLength={8} required /></div>
+                <div className="input-group"><label className="input-label">{t("pf_password")}</label><input className="input-field" type="text" style={{ WebkitTextSecurity:"disc" }} autoComplete="off" data-1p-ignore data-lpignore="true" placeholder={t("pf_password_hint")} value={password} onChange={e => setPassword(e.target.value)} minLength={8} required /></div>
                 <button className="btn-green btn-full" type="submit">{chosenPlan ? t("pf_profile_next") : t("pf_profile_create")}</button>
               </form>
             </>
@@ -226,7 +226,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
                 <span style={{ fontSize:"1.25rem" }}>🔒</span>
                 <span>{t("pf_payment_secure")} <strong>Stripe</strong>.</span>
               </div>
-              <form onSubmit={e => { e.preventDefault(); setStep("confirm") }}>
+              <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={e => { e.preventDefault(); setStep("confirm") }}>
                 <div className="input-group"><label className="input-label">{t("pf_card_number")}</label><input className="input-field" type="text" defaultValue="4242 4242 4242 4242" required /></div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
                   <div className="input-group"><label className="input-label">{t("pf_card_expiry")}</label><input className="input-field" type="text" defaultValue="12/28" required /></div>

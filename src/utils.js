@@ -5,9 +5,21 @@ const ENTERPRISE_DOMAINS = ["abnamro.com"]
 const WHITELIST_DOMAINS  = ["wealthpro.com"]
 const EXISTING_ACCOUNTS  = ["demo@abnamro.com","demo@aegon.com"]
 
+// Domain → company name for SSO display
+const COMPANY_NAMES = { "abnamro.com":"ABN AMRO" }
+
 const PRIVATE_DOMAINS_LOGIN = ["gmail.com","hotmail.com","yahoo.com","outlook.com","icloud.com","live.com","me.com"]
 const SSO_DOMAINS           = ["abnamro.com"]
 const KNOWN_ACCOUNTS_LOGIN  = ["demo@abnamro.com","demo@aegon.com"]
+
+// SSO domain → company name
+const SSO_COMPANY_NAMES = { "abnamro.com":"ABN AMRO" }
+
+export function getCompanyNameFromEmail(email) {
+  if (!email || !email.includes("@")) return null
+  const domain = email.toLowerCase().split("@")[1]
+  return SSO_COMPANY_NAMES[domain] || null
+}
 
 /**
  * Classifies an email for the registration flow.

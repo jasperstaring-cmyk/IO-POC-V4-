@@ -4,10 +4,10 @@ import { useLang } from '../LanguageContext.jsx'
 import IOLogo from '../components/IOLogo.jsx'
 
 // ─── Toggle component ───────────────────────────────────────────────────────
-function PlanTypeToggle({ active, onChange }) {
+function PlanTypeToggle({ active, onChange, t }) {
   const opts = [
-    { id: "personal", label: "Persoonlijk" },
-    { id: "business", label: "Zakelijk" },
+    { id: "personal", label: t("toggle_personal") },
+    { id: "business", label: t("toggle_business") },
   ]
   return (
     <div style={{ display:"inline-flex", background:C.gray100, borderRadius:99, padding:3, gap:2 }}>
@@ -75,7 +75,7 @@ export default function PlanPickerPage({ onSelectPlan, onSwitchToBusiness, onBac
           <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.5rem" }}>{t("sp_header_sub")}</p>
 
           {/* Toggle */}
-          <PlanTypeToggle active="personal" onChange={handleToggle} />
+          <PlanTypeToggle active="personal" onChange={handleToggle} t={t} />
         </div>
 
         {/* Plan kaarten */}

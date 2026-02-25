@@ -10,6 +10,7 @@ import OnboardingPage     from './pages/OnboardingPage.jsx'
 import AccountTypeChoice  from './flows/AccountTypeChoice.jsx'
 import PersonalFlow       from './flows/PersonalFlow.jsx'
 import BusinessFlow       from './flows/BusinessFlow.jsx'
+import BusinessInternationalFlow from './flows/BusinessInternationalFlow.jsx'
 import EnterpriseFlow     from './flows/EnterpriseFlow.jsx'
 import LoginModal         from './flows/LoginModal.jsx'
 
@@ -49,14 +50,14 @@ export default function App() {
     setView("onboarding")
   }
 
-  function handleGoLogin() { setView("article"); setModal("login") }
+  function handleGoLogin() { setModal(null); setView("login") }
 
   return (
     <>
       {view === "article" && (
         <ArticlePage
           loggedIn={loggedIn} userEmail={userEmail}
-          onLogin={() => setModal("login")}
+          onLogin={() => setView("login")}
           onSubscribe={() => setView("choice")}
           onLogout={handleLogout}
           onAccount={() => setView("account")}
@@ -67,7 +68,7 @@ export default function App() {
           if (trigger === "business") setView("business")
           else if (trigger && trigger.startsWith("personal_")) { setSelectedPlan(trigger.replace("personal_","")); setView("personal") }
           else setView("choice")
-        }} onLogin={() => setModal("login")} />
+        }} onLogin={() => setView("login")} />
       )}
       {view === "choice" && (
         <AccountTypeChoice onChoose={t => setView(t==="business"?"bizplans":"plans")} onBack={() => setView("article")} />
@@ -78,7 +79,9 @@ export default function App() {
       {view === "bizplans" && (
         <BusinessPlanPickerPage onSelectPlan={(id) => {
           setSelectedPlan(id)
-          setView(id === "enterprise" ? "enterprise" : "business")
+          if (id === "enterprise") setView("enterprise")
+          else if (id === "business_intl") setView("bizintl")
+          else setView("business")
         }} onSwitchToPersonal={() => setView("plans")} onBack={() => setView("choice")} />
       )}
       {view === "personal" && (
@@ -86,6 +89,9 @@ export default function App() {
       )}
       {view === "business" && (
         <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} onGoLogin={handleGoLogin} />
+      )}
+      {view === "bizintl" && (
+        <BusinessInternationalFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} />
       )}
       {view === "enterprise" && (
         <EnterpriseFlow onComplete={() => setView("article")} onBack={() => setView("bizplans")} />
@@ -99,8 +105,8 @@ export default function App() {
       {view === "account" && (
         <AccountPage user={userData} planType={activePlanType} onBack={() => setView("article")} />
       )}
-      {modal === "login" && (
-        <LoginModal onClose={() => setModal(null)} onGoRegister={() => { setModal(null); setView("choice") }} onLoginSuccess={handleLoginSuccess} />
+      {view === "login" && (
+        <LoginModal onClose={() => setView("article")} onGoRegister={() => setView("choice")} onLoginSuccess={handleLoginSuccess} />
       )}
     </>
   )

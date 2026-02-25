@@ -95,6 +95,15 @@ export const BUSINESS_SIZES = [
 // Backward compat
 export const PRODUCT_C_VARIANTS = BUSINESS_SIZES
 
+// ─── Business International sizes (Product F – all editions) ─────────────────
+// Prices from dossier; 50% discount for Wealth & Institutional segments
+export const BUSINESS_INTL_SIZES = [
+  { id:"S",  label:"Small",        users:"2–5 gebruikers",          yearlyPrice:1138,  perUser:null, minUsers:2,  maxUsers:5  },
+  { id:"M",  label:"Medium",       users:"6–10 gebruikers",         yearlyPrice:1498,  perUser:null, minUsers:6,  maxUsers:10 },
+  { id:"L",  label:"Large",        users:"11–15 gebruikers",        yearlyPrice:2088,  perUser:null, minUsers:11, maxUsers:15 },
+  { id:"XL", label:"Extra Large",  users:"16 of meer gebruikers",   yearlyPrice:null,  perUser:10.80, minUsers:16, maxUsers:null },
+]
+
 // ─── Personal plans ───────────────────────────────────────────────────────────
 export const PERSONAL_PLANS = [
   {

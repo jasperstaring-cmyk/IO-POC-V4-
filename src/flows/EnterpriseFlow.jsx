@@ -4,17 +4,9 @@ import { TopProgressBar, RegSidebar, BackButton, AuthNav, LangSwitcher } from '.
 import { useLang } from '../LanguageContext.jsx'
 import IOLogo from '../components/IOLogo.jsx'
 
-// ─── Sidebar content voor Enterprise ────────────────────────────────────────
-const ENTERPRISE_FEATURES = [
-  "Een abonnement op maat",
-  "Toegang tot Investmentofficer.nl",
-  "Toegang tot de App",
-  "Toegang tot onze nieuwsbrieven",
-  "Tot 100 collega's uitnodigen",
-]
-
 export default function EnterpriseFlow({ onComplete, onBack }) {
   const { t } = useLang()
+  const ENTERPRISE_FEATURES = t("ef_sidebar_features")
   const [step, setStep] = useState("form")
   const [company, setCompany] = useState({
     kvk:"", name:"", street:"", number:"", addition:"", zip:"", city:"", country:"NL", vat:"",
@@ -52,14 +44,14 @@ export default function EnterpriseFlow({ onComplete, onBack }) {
             </div>
 
             <h1 style={{ fontFamily:"var(--font-serif)", fontSize:"1.75rem", fontWeight:700, color:C.navy, lineHeight:"var(--lh-heading)", marginBottom:"0.625rem" }}>
-              Uw aanvraag is verstuurd
+              {t("ef_confirm_title")}
             </h1>
             <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"2rem" }}>
-              We nemen binnenkort contact met u op om de mogelijkheden te bespreken
+              {t("ef_confirm_body")}
             </p>
 
             <button className="btn-red btn-full" onClick={onComplete}>
-              Terug naar de website
+              {t("ef_confirm_cta")}
             </button>
           </div>
         </div>
@@ -83,7 +75,7 @@ export default function EnterpriseFlow({ onComplete, onBack }) {
           <h2 className="reg-step-title">Enterprise: Een abonnement op maat</h2>
           <p className="reg-step-sub">Vul hieronder de resterende gegevens in. Wij nemen zo spoedig mogelijk contact met u op.</p>
 
-          <form onSubmit={handleSubmit}>
+          <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={handleSubmit}>
             <div className="input-group">
               <label className="input-label">KvK nummer</label>
               <input className="input-field" type="text" placeholder="KvK nummer" value={company.kvk} onChange={e => handleChange("kvk", e.target.value)} required />
@@ -145,13 +137,13 @@ export default function EnterpriseFlow({ onComplete, onBack }) {
                 required
               />
               <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray700, lineHeight:"var(--lh-body)" }}>
-                Ik ga akkoord met de <button type="button" className="link-btn" style={{ fontSize:"0.85rem" }}>voorwaarden</button> en het <button type="button" className="link-btn" style={{ fontSize:"0.85rem" }}>privacy statement</button>
+                Ik ga akkoord met de <button type="button" className="link-btn" style={{ fontSize:"0.85rem" }}>{t("pf_terms_link")}</button> {t("bf_agree_and")} <button type="button" className="link-btn" style={{ fontSize:"0.85rem" }}>{t("pf_privacy_link")}</button>
               </span>
             </label>
 
             <div className="reg-nav-bar">
               <BackButton onClick={onBack} />
-              <button className="btn-red btn-full" type="submit">Stuur aanvraag</button>
+              <button className="btn-red btn-full" type="submit">{t("ef_submit")}</button>
             </div>
           </form>
 
@@ -159,10 +151,10 @@ export default function EnterpriseFlow({ onComplete, onBack }) {
         <div className="reg-sidebar">
           <RegSidebar
             planName="Enterprise"
-            planPrice="€ –,–"
-            planPriceSuffix="Prijs op aanvraag"
+            planPrice={t("ef_sidebar_price")}
+            planPriceSuffix={t("ef_sidebar_suffix")}
             planFeatures={ENTERPRISE_FEATURES}
-            planCta="Uw organisatie komt misschien in aanmerking voor gratis toegang"
+            planCta={t("ef_sidebar_cta")}
           />
         </div>
       </div>
