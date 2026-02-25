@@ -16,22 +16,22 @@ function yearlyPrice(size, segId, xlCount) {
 function monthlyPrice(size, segId, xlCount) { return Math.round(yearlyPrice(size, segId, xlCount) / 12 * 100) / 100 }
 function formatPrice(n) { return n.toLocaleString("nl-NL", { minimumFractionDigits:0, maximumFractionDigits:2 }) }
 
-function getSidebarMeta(size, segId, xlCount, t) {
+function getSidebarMeta(size, segId, xlCount, t, tBizIntl) {
   const features = t("bi_sidebar_features")
   if (!size) return { name:"Business International", price:"€ 99,–+", priceSuffix: t("bf_size_per_month"), cta:null, features }
   const mo = monthlyPrice(size, segId, xlCount)
   return {
     name: `Business International ${size.label}`,
     price: `€ ${formatPrice(mo)},–`,
-    priceSuffix: t("bf_size_per_month") + ", " + (t("lang") === "en" ? "billed annually" : "jaarlijks gefactureerd"),
+    priceSuffix: t("bf_size_per_month") + ", " + t("inline_billed_annually"),
     cta: hasDiscount(segId) ? t("bi_sidebar_discount_cta") : null,
-    features: [...features, `${size.users}`],
+    features: [...features, `${tBizIntl(size.id, "users")}`],
   }
 }
 
 /* ─── Component ────────────────────────────────────────────────────────── */
 export default function BusinessInternationalFlow({ onComplete, onBack }) {
-  const { t } = useLang()
+  const { t, tSeg, tType, tBizIntl } = useLang()
   const [step, setStep]             = useState("email")
   const [email, setEmail]           = useState("")
   const [firstName, setFirstName]   = useState("")
@@ -51,7 +51,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
   const curr  = STEP_NUM[step] || 1
   const selectedSegment = SEGMENTS.find(s => s.id === segment?.id)
   const xlCount = parseInt(xlUserCount) || 16
-  const sidebar = getSidebarMeta(chosenSize, segment?.id, xlCount, t)
+  const sidebar = getSidebarMeta(chosenSize, segment?.id, xlCount, t, tBizIntl)
 
   function handleCompanyChange(f, v) { setCompany(prev => ({ ...prev, [f]: v })) }
   function handleSegmentNext() {
@@ -73,10 +73,10 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
           <div style={{ marginTop:"2rem" }}>
             <h1 style={{ fontFamily:"var(--font-serif)", fontSize:"clamp(2rem,4vw,3rem)", fontWeight:700, color:C.navy, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", marginBottom:"0.75rem" }}>{t("bf_done_welcome")}</h1>
             <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, marginBottom:"1rem", lineHeight:"var(--lh-body)" }}>
-              {t("bi_done_body_pre")} <strong>{company.name || (t("lang")==="en"?"your organisation":"uw organisatie")}</strong> {t("bi_done_body_post")} {chosenSize?.users || (t("lang")==="en"?"your team":"uw team")}.
+              {t("bi_done_body_pre")} <strong>{company.name || t("inline_your_org")}</strong> {t("bi_done_body_post")} {chosenSize ? tBizIntl(chosenSize.id, "users") : t("inline_your_team")}.
             </p>
             <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.gray500, marginBottom:"2rem", fontStyle:"italic" }}>
-              {t("lang")==="en"?"You will receive a confirmation email at":"U ontvangt een bevestiging per e-mail op"} <strong>{email}</strong>.
+              {t("inline_confirm_email_at")} <strong>{email}</strong>.
             </p>
             <div style={{ display:"flex", gap:"1rem" }}>
               <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("bf_done_to_website")}</button>
@@ -124,10 +124,10 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
             <>
               <h2 className="reg-step-title">{t("bf_segment_title")}</h2>
               <p className="reg-step-sub">{t("bf_segment_sub")}</p>
-              {SEGMENTS.map(s => (<SelectionRow key={s.id} selected={segment?.id === s.id} onSelect={() => setSegment(s)} name={s.name} desc={s.desc} />))}
+              {SEGMENTS.map(s => (<SelectionRow key={s.id} selected={segment?.id === s.id} onSelect={() => setSegment(s)} name={tSeg(s.id, "name")} desc={tSeg(s.id, "desc")} />))}
               {segment && hasDiscount(segment.id) && (
                 <div className="alert alert-success" style={{ marginTop:"1rem", fontSize:"0.85rem" }}>
-                  <strong>{t("bi_discount_badge")}!</strong> {t("bf_segment_orgs_in")} {segment.name} {t("bi_discount_body")}
+                  <strong>{t("bi_discount_badge")}!</strong> {t("bf_segment_orgs_in")} {tSeg(segment.id, "name")} {t("bi_discount_body")}
                 </div>
               )}
               {segment && !hasDiscount(segment.id) && (
@@ -142,7 +142,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
             <>
               <h2 className="reg-step-title">{t("bf_type_title")}</h2>
               <p className="reg-step-sub">{t("bf_type_sub")}</p>
-              {selectedSegment.types.map(tp => (<SelectionRow key={tp.id} selected={orgType?.id === tp.id} onSelect={() => setOrgType(tp)} name={tp.name} desc={tp.desc} />))}
+              {selectedSegment.types.map(tp => (<SelectionRow key={tp.id} selected={orgType?.id === tp.id} onSelect={() => setOrgType(tp)} name={tType(tp.id, "name")} desc={tType(tp.id, "desc")} />))}
               <div className="reg-nav-bar"><BackButton onClick={() => setStep("segment")} /><button className="btn-green btn-full" onClick={handleTypeNext} disabled={!orgType}>{t("bf_next")}</button></div>
             </>
           )}
@@ -156,7 +156,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
                 <div style={{ background:"rgba(78,213,150,0.1)", border:`1.5px solid ${C.green}`, borderRadius:8, padding:"0.875rem 1.25rem", marginBottom:"1.25rem", display:"flex", alignItems:"center", gap:"0.75rem" }}>
                   <span style={{ background:C.green, color:C.navy, fontWeight:800, fontSize:"0.8rem", padding:"0.25rem 0.625rem", borderRadius:4, whiteSpace:"nowrap" }}>{t("bi_discount_badge")}</span>
                   <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy }}>
-                    {t("bi_discount_as")} {segment?.name} {t("bi_discount_org")} {t("bi_discount_body")}
+                    {t("bi_discount_as")} {segment ? tSeg(segment.id, "name") : ""} {t("bi_discount_org")} {t("bi_discount_body")}
                   </span>
                 </div>
               )}
@@ -166,12 +166,12 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
                 return (
                   <div key={sz.id}>
                     <SelectionRow selected={chosenSize?.id === sz.id} onSelect={() => setChosenSize(sz)}
-                      name={`${sz.label} — ${sz.users}`}
+                      name={`${sz.label} — ${tBizIntl(sz.id, "users")}`}
                       desc={sz.id === "XL" ? t("bi_per_user") : `€ ${formatPrice(szYr)},– ${t("bi_yearly_excl")}`}
                       right={<span style={{ textAlign:"right" }}>
                         {showDiscount && <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.75rem", color:C.gray500, textDecoration:"line-through", display:"block" }}>€ {formatPrice(szBaseYr)},–</span>}
                         <span style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1rem", color:C.navy }}>
-                          {sz.id === "XL" ? `€ ${formatPrice(sz.perUser * (showDiscount ? 0.5 : 1))},– p.g.` : `€ ${formatPrice(monthlyPrice(sz, segment?.id, xlCount))},– /${t("lang")==="en"?"mo":"mnd"}`}
+                          {sz.id === "XL" ? `€ ${formatPrice(sz.perUser * (showDiscount ? 0.5 : 1))},– p.g.` : `€ ${formatPrice(monthlyPrice(sz, segment?.id, xlCount))},– /${t("inline_mo")}`}
                         </span>
                       </span>} />
                     {sz.id === "XL" && chosenSize?.id === "XL" && (
@@ -244,7 +244,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
                 </div>
                 <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, lineHeight:1.6 }}>
                   {company.name}<br/>{company.street} {company.number}{company.addition ? ` ${company.addition}` : ""}, {company.zip} {company.city}<br/>
-                  KvK: {company.kvk}{company.vat ? ` · BTW: ${company.vat}` : ""}<br/>{segment?.name || "–"}{orgType ? ` — ${orgType.name}` : ""}
+                  KvK: {company.kvk}{company.vat ? ` · BTW: ${company.vat}` : ""}<br/>{segment ? tSeg(segment.id, "name") : "–"}{orgType ? ` — ${tType(orgType.id, "name")}` : ""}
                 </div>
               </div>
               <div style={{ background:"rgba(78,213,150,0.08)", border:`1.5px solid ${C.green}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"1.5rem" }}>
@@ -253,7 +253,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
                   <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("size_picker")}>{t("bf_overview_edit")}</button>
                 </div>
                 <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy, marginBottom:"0.25rem" }}>Business International {chosenSize?.label}</div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, marginBottom:"0.25rem" }}>{chosenSize?.users} · {t("bi_all_editions")}</div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, marginBottom:"0.25rem" }}>{chosenSize ? tBizIntl(chosenSize.id, "users") : ""} · {t("bi_all_editions")}</div>
                 <div style={{ fontFamily:"var(--font-sans)", fontSize:"1rem", fontWeight:700, color:C.navy, display:"flex", alignItems:"center", gap:"0.5rem", flexWrap:"wrap" }}>
                   {showDiscount && <span style={{ textDecoration:"line-through", color:C.gray500, fontWeight:400 }}>€ {formatPrice(baseYr)},–</span>}
                   <span>€ {formatPrice(yr)},– {t("bf_size_per_year")}</span>
@@ -280,7 +280,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"1.5rem", paddingBottom:"1rem", borderBottom:`1px solid ${C.gray200}` }}>
                   <div>
                     <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1rem", color:C.navy }}>Business International {chosenSize?.label}</div>
-                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500 }}>{chosenSize?.users} · {t("bi_payment_all_ed")} · {company.name}</div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500 }}>{chosenSize ? tBizIntl(chosenSize.id, "users") : ""} · {t("bi_payment_all_ed")} · {company.name}</div>
                   </div>
                   <div style={{ textAlign:"right" }}>
                     {showDiscount && <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500, textDecoration:"line-through" }}>€ {formatPrice(baseYr)},–</div>}
@@ -307,7 +307,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
               <h2 className="reg-step-title">{t("bi_invite_title")}</h2>
               <p className="reg-step-sub">{t("bi_invite_sub")}</p>
               <div className="alert alert-success">
-                <strong>{t("bi_invite_activated")}</strong> {t("bf_invite_for")} {company.name || (t("lang")==="en"?"your organisation":"uw organisatie")}.
+                <strong>{t("bi_invite_activated")}</strong> {t("bf_invite_for")} {company.name || t("inline_your_org")}.
                 {" "}{t("bi_invite_package")} {chosenSize?.label} {t("bi_invite_with_all")}
               </div>
               {inviteEmails.map((em,i) => (

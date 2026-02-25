@@ -9,7 +9,7 @@ import IOLogo from '../components/IOLogo.jsx'
 const FREE_SEGMENTS = ["wealth", "institutional"]
 function isFreePermanent(segId) { return FREE_SEGMENTS.includes(segId) }
 
-function getSidebarMeta(segId, isPaid, chosenSize, xlCount, t) {
+function getSidebarMeta(segId, isPaid, chosenSize, xlCount, t, tBiz) {
   const features = t("bf_sidebar_features")
   if (isPaid && chosenSize) {
     const price = chosenSize.id === "XL"
@@ -18,18 +18,18 @@ function getSidebarMeta(segId, isPaid, chosenSize, xlCount, t) {
     return {
       name: `Business ${chosenSize.label}`,
       price,
-      priceSuffix: t("bf_size_per_month") + ", " + (t("lang") === "en" ? "billed annually" : "jaarlijks gefactureerd"),
+      priceSuffix: t("bf_size_per_month") + ", " + t("inline_billed_annually"),
       cta: null,
-      features: [...features, `${chosenSize.users}`],
+      features: [...features, `${tBiz(chosenSize.id, "users")}`],
     }
   }
   if (isPaid) {
-    return { name:"Business", price: t("lang") === "en" ? "Paid" : "Betaald", priceSuffix: t("bf_sidebar_paid_suffix"), cta:null, features }
+    return { name:"Business", price: t("inline_paid"), priceSuffix: t("bf_sidebar_paid_suffix"), cta:null, features }
   }
   if (isFreePermanent(segId)) {
-    return { name:"Business", price: t("lang") === "en" ? "Free" : "Gratis", priceSuffix: t("bf_sidebar_free_perm_suffix"), cta: t("bf_sidebar_free_permanent"), features }
+    return { name:"Business", price: t("inline_free"), priceSuffix: t("bf_sidebar_free_perm_suffix"), cta: t("bf_sidebar_free_permanent"), features }
   }
-  return { name:"Business", price: t("lang") === "en" ? "Free" : "Gratis", priceSuffix: t("bf_sidebar_free_trial_suffix"), cta: t("bf_sidebar_free_trial"), features }
+  return { name:"Business", price: t("inline_free"), priceSuffix: t("bf_sidebar_free_trial_suffix"), cta: t("bf_sidebar_free_trial"), features }
 }
 
 /* ─── 2-year trial check (demo): e-mails starting with "trial@" ────── */
@@ -37,7 +37,7 @@ function hadRecentTrial(email) { return email.toLowerCase().startsWith("trial@")
 
 /* ─── Component ────────────────────────────────────────────────────────── */
 export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
-  const { t } = useLang()
+  const { t, tSeg, tType, tBiz } = useLang()
   const [step, setStep]             = useState("email")
   const [email, setEmail]           = useState("")
   const [firstName, setFirstName]   = useState("")
@@ -60,7 +60,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
   const curr    = stepMap[step] || 1
 
   const selectedSegment = SEGMENTS.find(s => s.id === segment?.id)
-  const sidebar = getSidebarMeta(segment?.id, isPaidFlow, chosenSize, parseInt(xlUserCount) || 16, t)
+  const sidebar = getSidebarMeta(segment?.id, isPaidFlow, chosenSize, parseInt(xlUserCount) || 16, t, tBiz)
 
   function handleCompanyChange(f, v) { setCompany(prev => ({ ...prev, [f]: v })) }
 
@@ -101,14 +101,14 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
             </h1>
             <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, marginBottom:"1rem", lineHeight:"var(--lh-body)" }}>
               {isPaidFlow
-                ? <>{t("lang") === "en" ? "Your" : "Uw"} Business {chosenSize?.label || ""} {t("lang") === "en" ? "plan for" : "regeling voor"} <strong>{company.name || (t("lang") === "en" ? "your organisation" : "uw organisatie")}</strong> {t("lang") === "en" ? "has been activated." : "is geactiveerd."}</>
+                ? <>{t("inline_your")} Business {chosenSize?.label || ""} {t("inline_plan_for")} <strong>{company.name || t("inline_your_org")}</strong> {t("inline_activated")}</>
                 : isFreePermanent(segment?.id)
-                  ? <>{t("lang") === "en" ? "Your Business plan for" : "Uw Business regeling voor"} <strong>{company.name || (t("lang") === "en" ? "your organisation" : "uw organisatie")}</strong> {t("lang") === "en" ? "has been activated. As an organisation in" : "is geactiveerd. Als organisatie in het segment"} {segment?.name || ""} {t("lang") === "en" ? "you have free ongoing access, subject to validation." : "heeft u gratis doorlopende toegang, onder voorbehoud van validatie."}</>
-                  : <>{t("lang") === "en" ? "Your Business plan for" : "Uw Business regeling voor"} <strong>{company.name || (t("lang") === "en" ? "your organisation" : "uw organisatie")}</strong> {t("lang") === "en" ? "has been activated. Your organisation has 6 months free access." : "is geactiveerd. Uw organisatie heeft 6 maanden gratis toegang."}</>
+                  ? <>{t("inline_your_biz_plan_for")} <strong>{company.name || t("inline_your_org")}</strong> {t("inline_activated_segment_perm")} {segment ? tSeg(segment.id, "name") : ""} {t("inline_free_ongoing_validated")}</>
+                  : <>{t("inline_your_biz_plan_for")} <strong>{company.name || t("inline_your_org")}</strong> {t("inline_activated_6mo")}</>
               }
             </p>
             <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.gray500, marginBottom:"2rem", fontStyle:"italic" }}>
-              {t("lang") === "en" ? "You will receive a confirmation email at" : "U ontvangt een bevestiging per e-mail op"} <strong>{email}</strong>.
+              {t("inline_confirm_email_at")} <strong>{email}</strong>.
             </p>
             <div style={{ display:"flex", gap:"1rem" }}>
               <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("bf_done_to_website")}</button>
@@ -194,8 +194,8 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               {BUSINESS_SIZES.map(sz => (
                 <div key={sz.id}>
                   <SelectionRow selected={chosenSize?.id === sz.id} onSelect={() => setChosenSize(sz)}
-                    name={`${sz.label} — ${sz.users}`} desc={sz.desc}
-                    right={sz.id === "XL" ? (xlUserCount ? `€ ${(xlPrice).toLocaleString("nl-NL")},– /${t("lang")==="en"?"mo":"mnd"}` : sz.priceLabel) : `${sz.priceLabel} /${t("lang")==="en"?"mo":"mnd"}`} />
+                    name={`${sz.label} — ${tBiz(sz.id, "users")}`} desc={tBiz(sz.id, "desc")}
+                    right={sz.id === "XL" ? (xlUserCount ? `€ ${(xlPrice).toLocaleString("nl-NL")},– /${t("inline_mo")}` : (t("biz_XL_price_label"))) : `${sz.priceLabel} /${t("inline_mo")}`} />
                   {sz.id === "XL" && chosenSize?.id === "XL" && (
                     <div style={{ margin:"-0.25rem 0 0.75rem 2.75rem", padding:"1rem", background:C.gray50, borderRadius:6, border:`1px solid ${C.gray200}` }}>
                       <label className="input-label">{t("bf_size_users_label")}</label>
@@ -213,8 +213,8 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               {chosenSize && chosenSize.id !== "XL" && (
                 <div style={{ background:C.gray50, borderRadius:6, border:`1px solid ${C.gray200}`, padding:"1rem 1.25rem", marginTop:"0.5rem", marginBottom:"0.5rem" }}>
                   <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy }}>
-                    <strong>{chosenSize.label}</strong> · {chosenSize.users}<br/>
-                    {chosenSize.priceLabel} {t("bf_size_per_month")} · <strong>€ {(chosenSize.monthlyPrice * 12).toLocaleString("nl-NL")},–</strong> {t("bf_size_per_year")} ({t("lang")==="en"?"excl. VAT":"excl. btw"})
+                    <strong>{chosenSize.label}</strong> · {tBiz(chosenSize.id, "users")}<br/>
+                    {chosenSize.priceLabel} {t("bf_size_per_month")} · <strong>€ {(chosenSize.monthlyPrice * 12).toLocaleString("nl-NL")},–</strong> {t("bf_size_per_year")} ({t("inline_excl_vat")})
                   </div>
                 </div>
               )}
@@ -231,11 +231,11 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               <h2 className="reg-step-title">{t("bf_segment_title")}</h2>
               <p className="reg-step-sub">{t("bf_segment_sub")}</p>
               {SEGMENTS.map(s => (
-                <SelectionRow key={s.id} selected={segment?.id === s.id} onSelect={() => setSegment(s)} name={s.name} desc={s.desc} />
+                <SelectionRow key={s.id} selected={segment?.id === s.id} onSelect={() => setSegment(s)} name={tSeg(s.id, "name")} desc={tSeg(s.id, "desc")} />
               ))}
               {segment && !isPaidFlow && (
                 <div className="alert alert-info" style={{ marginTop:"1rem", fontSize:"0.85rem" }}>
-                  {t("bf_segment_orgs_in")} {segment.name} {isFreePermanent(segment.id) ? t("bf_segment_free_perm") : t("bf_segment_free_trial")}
+                  {t("bf_segment_orgs_in")} {tSeg(segment.id, "name")} {isFreePermanent(segment.id) ? t("bf_segment_free_perm") : t("bf_segment_free_trial")}
                 </div>
               )}
               <div className="reg-nav-bar">
@@ -251,7 +251,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               <h2 className="reg-step-title">{t("bf_type_title")}</h2>
               <p className="reg-step-sub">{t("bf_type_sub")}</p>
               {selectedSegment.types.map(tp => (
-                <SelectionRow key={tp.id} selected={orgType?.id === tp.id} onSelect={() => setOrgType(tp)} name={tp.name} desc={tp.desc} />
+                <SelectionRow key={tp.id} selected={orgType?.id === tp.id} onSelect={() => setOrgType(tp)} name={tType(tp.id, "name")} desc={tType(tp.id, "desc")} />
               ))}
               <div className="reg-nav-bar">
                 <BackButton onClick={() => setStep("segment")} />
@@ -321,7 +321,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                   <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500 }}>3. {t("bf_overview_segment")}</span>
                   <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("segment")}>{t("bf_overview_edit")}</button>
                 </div>
-                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, lineHeight:1.6 }}>{segment?.name || "–"}{orgType ? ` — ${orgType.name}` : ""}</div>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, lineHeight:1.6 }}>{segment ? tSeg(segment.id, "name") : "–"}{orgType ? ` — ${tType(orgType.id, "name")}` : ""}</div>
               </div>
 
               <div style={{ background:"rgba(78,213,150,0.08)", border:`1.5px solid ${C.green}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"1.5rem" }}>
@@ -334,7 +334,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                       <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy }}>Business {chosenSize?.label}</div>
                       <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("size_picker")}>{t("bf_overview_edit")}</button>
                     </div>
-                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, marginBottom:"0.25rem" }}>{chosenSize?.users}</div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, marginBottom:"0.25rem" }}>{chosenSize ? tBiz(chosenSize.id, "users") : ""}</div>
                     <div style={{ fontFamily:"var(--font-sans)", fontSize:"1rem", fontWeight:700, color:C.navy }}>
                       {chosenSize?.id === "XL"
                         ? `€ ${xlPrice.toLocaleString("nl-NL")},– ${t("bf_size_per_month")} · € ${(xlPrice * 12).toLocaleString("nl-NL")},– ${t("bf_size_per_year")}`
@@ -350,7 +350,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                     </div>
                     <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500, lineHeight:"var(--lh-body)" }}>
                       {isFreePermanent(segment?.id)
-                        ? (t("lang") === "en" ? "As an organisation in " : "Als organisatie in ") + (segment?.name || "") + " " + t("bf_free_perm_body")
+                        ? t("inline_as_org_in") + " " + (segment ? tSeg(segment.id, "name") : "") + " " + t("bf_free_perm_body")
                         : t("bf_free_trial_body")
                       }
                     </div>
@@ -384,7 +384,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"1.5rem", paddingBottom:"1rem", borderBottom:`1px solid ${C.gray200}` }}>
                   <div>
                     <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1rem", color:C.navy }}>Business {chosenSize?.label}</div>
-                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500 }}>{chosenSize?.users} · {company.name}</div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500 }}>{chosenSize ? tBiz(chosenSize.id, "users") : ""} · {company.name}</div>
                   </div>
                   <div style={{ textAlign:"right" }}>
                     <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.25rem", color:C.navy }}>
@@ -414,8 +414,8 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               <h2 className="reg-step-title">{t("bf_invite_title_new")}</h2>
               <p className="reg-step-sub">{t("bf_invite_sub_new")}</p>
               <div className="alert alert-success">
-                <strong>{t("bf_invite_activated")}</strong> {t("bf_invite_for")} {company.name || (t("lang") === "en" ? "your organisation" : "uw organisatie")}.
-                {isPaidFlow && chosenSize && (<> {t("lang") === "en" ? "You have the" : "U heeft het"} {chosenSize.label} {t("lang") === "en" ? "plan" : "pakket"} ({chosenSize.users}).</>)}
+                <strong>{t("bf_invite_activated")}</strong> {t("bf_invite_for")} {company.name || t("inline_your_org")}.
+                {isPaidFlow && chosenSize && (<> {t("inline_you_have_the")} {chosenSize.label} {t("inline_plan")} ({tBiz(chosenSize.id, "users")}).</>)}
               </div>
               {inviteEmails.map((em,i) => (
                 <div key={i} className="input-group">
