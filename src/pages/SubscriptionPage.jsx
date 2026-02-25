@@ -52,9 +52,7 @@ export default function SubscriptionPage({ onStartReg, onLogin }) {
   return (
     <div className="sub-page">
       <TopNav onLogin={onLogin} onSubscribe={() => {}} loggedIn={false} />
-      <div style={{ background:C.navy, color:C.white, padding:"0.5rem 1.5rem", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"var(--font-sans)", fontSize:"0.8125rem" }}>
-        <span style={{ opacity:0.6 }}>POC Demo — {t("sp_badge")}</span>
-      </div>
+
       <div style={{ maxWidth:900, margin:"0 auto", padding:"3rem 1.5rem 5rem" }}>
         <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
           <div style={{ display:"inline-block", background:C.gray100, borderRadius:99, padding:"0.3rem 1rem", fontFamily:"var(--font-sans)", fontSize:"0.8rem", fontWeight:600, color:C.gray500, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:"1rem" }}>{t("sp_badge")}</div>

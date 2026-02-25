@@ -111,12 +111,7 @@ export default function ArticlePage({ loggedIn, userEmail, onLogin, onSubscribe,
   return (
     <div style={{ minHeight:"100vh", background:C.white }}>
       <TopNav onLogin={onLogin} onSubscribe={onSubscribe} loggedIn={loggedIn} userEmail={userEmail} onLogout={onLogout} onAccount={onAccount} />
-      <div style={{ background:C.navy, color:C.white, padding:"0.5rem 1.5rem", display:"flex", alignItems:"center", justifyContent:"center", gap:"1.5rem", fontFamily:"var(--font-sans)", fontSize:"0.8125rem" }}>
-        <span style={{ opacity:0.6 }}>POC Demo →</span>
-        <button onClick={onLogin} style={{ background:"rgba(255,255,255,0.12)", border:"none", color:C.white, padding:"0.3rem 0.875rem", borderRadius:4, cursor:"pointer", fontSize:"0.8125rem", fontFamily:"var(--font-sans)" }}>{txt.demo_login}</button>
-        <button onClick={onSubscribe} style={{ background:"rgba(255,255,255,0.12)", border:"none", color:C.white, padding:"0.3rem 0.875rem", borderRadius:4, cursor:"pointer", fontSize:"0.8125rem", fontFamily:"var(--font-sans)" }}>{txt.demo_register}</button>
-        {loggedIn && <button onClick={onLogout} style={{ background:"rgba(255,255,255,0.12)", border:"none", color:C.white, padding:"0.3rem 0.875rem", borderRadius:4, cursor:"pointer", fontSize:"0.8125rem", fontFamily:"var(--font-sans)" }}>{txt.demo_reset}</button>}
-      </div>
+
       <main style={{ maxWidth:720, margin:"0 auto", padding:"2.5rem 1.5rem 4rem" }}>
         <span className="category-label">{txt.category}</span>
         <h1 className="article-title">{txt.title}</h1>
