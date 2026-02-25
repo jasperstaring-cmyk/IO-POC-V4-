@@ -31,6 +31,7 @@ export const translations = {
     choice_business: "Voor mijn team of organisatie",
 
     // ── PersonalFlow ──
+    pf_back:          "Terug",
     pf_email_title:   "Maak een gratis account en kies daarna jouw abonnement",
     pf_email_sub:     "Vul uw persoonlijke gegevens in zodat we uw account kunnen aanmaken.",
     pf_email_label:   "Jouw zakelijk e-mailadres",
@@ -459,6 +460,7 @@ export const translations = {
     choice_business: "For my team or organisation",
 
     // ── PersonalFlow ──
+    pf_back:          "Back",
     pf_email_title:   "Create a free account and then choose your subscription",
     pf_email_sub:     "Fill in your personal details so we can create your account.",
     pf_email_label:   "Your business email address",

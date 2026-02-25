@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { C } from '../tokens.js'
 import { JOB_ROLES } from '../data.js'
 import { classifyEmailForReg } from '../utils.js'
-import { TopProgressBar, RegSidebar, EmailChip, AuthNav, CheckItem, LangSwitcher } from '../components/shared.jsx'
+import { TopProgressBar, RegSidebar, EmailChip, AuthNav, CheckItem } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
 import IOLogo from '../components/IOLogo.jsx'
 
@@ -17,64 +17,6 @@ function planMeta(planId, t) {
   return map[planId] || {}
 }
 
-// ─── Volledige plan-keuze pagina (met groene CTA buttons) ───────────────────
-function PlanPickerPage({ onSelect, onBack, t }) {
-  const PLANS = [
-    { id:"freemium", name:"Freemium", sub:t("plan_freemium_sub"), priceLabel:t("plan_freemium_price"), priceSuffix:"",                  cta:t("plan_freemium_cta"), ctaNote:t("plan_freemium_note"), features:t("plan_freemium_features")||[] },
-    { id:"trial",    name:"Pro Trial", sub:t("plan_trial_sub"),   priceLabel:t("plan_trial_price"),    priceSuffix:t("plan_trial_suffix"), cta:t("plan_trial_cta"),   ctaNote:t("plan_trial_note"),   features:t("plan_trial_features")||[]   },
-    { id:"pro",      name:"Pro",       sub:t("plan_pro_sub"),     priceLabel:t("plan_pro_price"),      priceSuffix:t("plan_pro_suffix"),   cta:t("plan_pro_cta"),     ctaNote:t("plan_pro_note"),     features:t("plan_pro_features")||[]     },
-  ]
-  return (
-    <div style={{ minHeight:"100vh", background:C.white }}>
-      <TopProgressBar total={4} current={2.5} />
-      {/* Nav */}
-      <header style={{ position:"sticky", top:4, zIndex:50, background:C.white, borderBottom:`1px solid ${C.gray100}`, boxShadow:"0 1px 6px rgba(12,24,46,0.06)" }}>
-        <div style={{ maxWidth:1120, margin:"0 auto", padding:"0 1.5rem", height:56, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <IOLogo />
-          <div style={{ display:"flex", alignItems:"center", gap:"1rem" }}>
-            <LangSwitcher />
-            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500, display:"flex", alignItems:"center", gap:"0.375rem" }}>
-              ← {t("pf_back") || "Terug"}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div style={{ maxWidth:900, margin:"0 auto", padding:"3rem 1.5rem 5rem" }}>
-        {/* Header */}
-        <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
-          <div style={{ display:"inline-block", background:C.gray100, borderRadius:99, padding:"0.3rem 1rem", fontFamily:"var(--font-sans)", fontSize:"0.8rem", fontWeight:600, color:C.gray500, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:"1rem" }}>{t("sp_badge")}</div>
-          <h1 style={{ fontFamily:"var(--font-serif)", fontSize:"clamp(1.75rem,4vw,2.5rem)", fontWeight:700, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", color:C.navy, marginBottom:"1rem" }}>{t("sp_header")}</h1>
-          <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, lineHeight:"var(--lh-body)" }}>{t("sp_header_sub")}</p>
-        </div>
-
-        <p style={{ textAlign:"center", fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500, marginBottom:"2rem", lineHeight:"var(--lh-body)" }}>{t("sp_personal_intro")}</p>
-
-        {/* Plan kaarten met groene CTA buttons */}
-        <div className="sub-cards">
-          {PLANS.map(p => (
-            <div key={p.id} className="sub-card">
-              <div className="sub-card-name">{p.name}</div>
-              <div className="sub-card-sub">{p.sub}</div>
-              <div>
-                <span className="sub-card-price">{p.priceLabel}</span>
-                {p.priceSuffix && <span className="sub-card-price-suffix"> {p.priceSuffix}</span>}
-              </div>
-              <button className="btn-green" style={{ marginTop:"1rem" }} onClick={() => onSelect(p.id)}>{p.cta}</button>
-              <p className="sub-card-note">{p.ctaNote}</p>
-              <div className="sub-card-features">
-                <div className="sub-card-features-title">{t("sp_features_title")}</div>
-                {p.features.map((f,i) => <CheckItem key={i}>{f}</CheckItem>)}
-              </div>
-              <button className="btn-outline" onClick={() => alert(`POC: ${p.name}`)}>{t("sp_all_features")}</button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLogin }) {
   const { t } = useLang()
   const [step, setStep]             = useState("email")
@@ -83,11 +25,11 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
   const [lastName, setLastName]     = useState("")
   const [jobRole, setJobRole]       = useState("")
   const [password, setPassword]     = useState("")
-  const [chosenPlan, setChosenPlan] = useState(selectedPlan || null)
+  const [chosenPlan, setChosenPlan] = useState(selectedPlan || "freemium")
   const [privateOverride, setPrivateOverride] = useState(false)
 
   const totalSteps  = chosenPlan === "pro" ? 4 : 3
-  const STEP_NUM    = { email:1, private_warning:1, generic_block:1, existing:1, enterprise:1, whitelist:1, profile:2, plan:3, payment:3, confirm:4, done:4 }
+  const STEP_NUM    = { email:1, private_warning:1, generic_block:1, existing:1, enterprise:1, whitelist:1, profile:2, payment:3, confirm:3, done:4 }
   const currentStep = STEP_NUM[step] || 1
 
   // Sidebar plan info
@@ -106,14 +48,10 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
 
   function handleProfileSubmit(e) {
     e.preventDefault()
-    if (chosenPlan) setStep(chosenPlan === "pro" ? "payment" : "confirm")
-    else setStep("plan")
+    setStep(chosenPlan === "pro" ? "payment" : "confirm")
   }
 
-  function handlePlanSelect(planId) {
-    setChosenPlan(planId)
-    setStep(planId === "pro" ? "payment" : "confirm")
-  }
+  // Plan is al gekozen op de PlanPickerPage
 
   // ── Done: designer bevestigingspagina ────────────────────────────────────────
   if (step === "done") {
@@ -157,9 +95,6 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
         </div>
       </div>
     )
-  }
-  if (step === "plan") {
-    return <PlanPickerPage onSelect={handlePlanSelect} onBack={() => setStep("profile")} t={t} />
   }
 
   return (
@@ -303,7 +238,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
                 </div>
                 <button className="btn-red btn-full" type="submit">{t("pf_payment_cta")}</button>
               </form>
-              <button className="btn-secondary btn-full" style={{ marginTop:"0.75rem" }} onClick={() => setStep("plan")}>{t("pf_payment_back")}</button>
+              <button className="btn-secondary btn-full" style={{ marginTop:"0.75rem" }} onClick={onBack}>{t("pf_payment_back")}</button>
             </>
           )}
 
@@ -314,13 +249,13 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
               <p className="reg-step-sub">{t("pf_confirm_sub")}</p>
               {[
                 { label: t("pf_confirm_data"), items:[email, `${firstName} ${lastName}`, jobRole], back:"profile" },
-                { label: t("pf_confirm_plan"), items:[chosenPlan === "freemium" ? t("pf_plan_freemium") : chosenPlan === "trial" ? t("pf_plan_trial") : t("pf_plan_pro")], back:"plan" },
+                { label: t("pf_confirm_plan"), items:[chosenPlan === "freemium" ? t("pf_plan_freemium") : chosenPlan === "trial" ? t("pf_plan_trial") : t("pf_plan_pro")], back:"_planpicker" },
                 ...(chosenPlan === "pro" ? [{ label: t("pf_confirm_pay"), items:[t("pf_confirm_stripe")], back:"payment" }] : []),
               ].map((section, i) => (
                 <div key={i} style={{ border:`1px solid ${C.gray200}`, borderRadius:6, padding:"1rem 1.25rem", marginBottom:"0.75rem" }}>
                   <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.5rem", display:"flex", justifyContent:"space-between" }}>
                     {section.label}
-                    <button className="link-btn" style={{ fontSize:"0.8rem", textTransform:"none", letterSpacing:0 }} onClick={() => setStep(section.back)}>{t("pf_confirm_edit")}</button>
+                    <button className="link-btn" style={{ fontSize:"0.8rem", textTransform:"none", letterSpacing:0 }} onClick={() => section.back === "_planpicker" ? onBack() : setStep(section.back)}>{t("pf_confirm_edit")}</button>
                   </div>
                   {section.items.map((item,j) => <div key={j} style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy }}>{item}</div>)}
                 </div>

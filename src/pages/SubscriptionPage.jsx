@@ -21,23 +21,25 @@ export function PlanCards({ onSelect }) {
     <div className="sub-cards">
       {plans.map(p => (
         <div key={p.id} className="sub-card">
-          <div className="sub-card-name">{p.name}</div>
-          <div className="sub-card-sub">{p.sub}</div>
-          <div>
+          <div className="sub-card-zone-name">
+            <div className="sub-card-name">{p.name}</div>
+            <div className="sub-card-sub">{p.sub}</div>
+          </div>
+          <div className="sub-card-zone-price">
             <span className="sub-card-price">{p.priceLabel}</span>
             {p.priceSuffix && <span className="sub-card-price-suffix"> {p.priceSuffix}</span>}
           </div>
-          <button className="btn-green" style={{ marginTop:"1rem" }} onClick={() => onSelect(p.id)}>
-            {p.cta}
-          </button>
-          <p className="sub-card-note">{p.ctaNote}</p>
-          <div className="sub-card-features">
+          <div className="sub-card-zone-cta">
+            <button className="btn-red" onClick={() => onSelect(p.id)}>{p.cta}</button>
+            <p className="sub-card-note">{p.ctaNote}</p>
+          </div>
+          <div className="sub-card-zone-features">
             <div className="sub-card-features-title">{t("sp_features_title")}</div>
             {p.features.map((f,i) => <CheckItem key={i}>{f}</CheckItem>)}
           </div>
-          <button className="btn-outline" onClick={() => alert(`POC: ${p.name}`)}>
-            {t("sp_all_features")}
-          </button>
+          <div className="sub-card-zone-bottom">
+            <button className="btn-outline" onClick={() => alert(`POC: ${p.name}`)}>{t("sp_all_features")}</button>
+          </div>
         </div>
       ))}
     </div>

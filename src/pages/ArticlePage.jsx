@@ -15,8 +15,8 @@ const ARTICLE = {
     paywall_title: "Lees verder met Investment Officer",
     paywall_sub: "Dit artikel is onderdeel van onze premium content.\nAfhankelijk van je sector en organisatie heb je mogelijk gratis toegang.",
     paywall_badge: "Gratis toegang\nvoor Wealth\nprofessionals",
-    paywall_login: "Check jouw toegang",
-    paywall_subscribe: "Bekijk abonnementen",
+    paywall_login: "Inloggen",
+    paywall_subscribe: "Abonneren",
     paywall_items: [
       "Onbeperkt online toegang tot alle premium artikelen",
       "Toegang tot research databases en marktrapporten",
@@ -40,8 +40,8 @@ const ARTICLE = {
     paywall_title: "Continue reading with Investment Officer",
     paywall_sub: "This article is part of our premium content.\nDepending on your sector and organisation you may have free access.",
     paywall_badge: "Free access\nfor Wealth\nprofessionals",
-    paywall_login: "Check your access",
-    paywall_subscribe: "View subscriptions",
+    paywall_login: "Log in",
+    paywall_subscribe: "Subscribe",
     paywall_items: [
       "Unlimited online access to all premium articles",
       "Access to research databases and market reports",

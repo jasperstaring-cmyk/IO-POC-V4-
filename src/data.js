@@ -66,13 +66,16 @@ export const SEGMENTS = [
   },
 ]
 
-// ─── Business product C variants ─────────────────────────────────────────────
-export const PRODUCT_C_VARIANTS = [
-  { id:"S",  label:"Variant S",  users:"2–5 users",   priceLabel:"€ 948,–",         perUser: null },
-  { id:"M",  label:"Variant M",  users:"6–10 users",  priceLabel:"€ 1.248,–",       perUser: null },
-  { id:"L",  label:"Variant L",  users:"11–15 users", priceLabel:"€ 1.740,–",       perUser: null },
-  { id:"XL", label:"Variant XL", users:"16+ users",   priceLabel:"Vanaf € 1.728,–", perUser: 108  },
+// ─── Business plan sizes (per Figma wireframe 153) ─────────────────────────
+export const BUSINESS_SIZES = [
+  { id:"S",  label:"Small Business",       users:"1–5 gebruikers",    priceLabel:"€ 79,–",    monthlyPrice:79,   perUser: null,  desc:"Voor kleine teams die samen willen lezen." },
+  { id:"M",  label:"Medium Business",      users:"6–10 gebruikers",   priceLabel:"€ 104,–",   monthlyPrice:104,  perUser: null,  desc:"Voor middelgrote teams met gedeelde toegang." },
+  { id:"L",  label:"Large Business",       users:"11–16 gebruikers",  priceLabel:"€ 145,–",   monthlyPrice:145,  perUser: null,  desc:"Voor grotere organisaties." },
+  { id:"XL", label:"Extra large Business", users:"Meer dan 16 gebruikers", priceLabel:"Vanaf € 9,– p.m. per gebruiker", monthlyPrice:null, perUser: 9, desc:"Prijs per gebruiker per maand." },
 ]
+
+// Backward compat
+export const PRODUCT_C_VARIANTS = BUSINESS_SIZES
 
 // ─── Personal plans ───────────────────────────────────────────────────────────
 export const PERSONAL_PLANS = [

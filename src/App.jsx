@@ -3,6 +3,8 @@ import './styles/global.css'
 
 import ArticlePage        from './pages/ArticlePage.jsx'
 import SubscriptionPage   from './pages/SubscriptionPage.jsx'
+import PlanPickerPage         from './pages/PlanPickerPage.jsx'
+import BusinessPlanPickerPage from './pages/BusinessPlanPickerPage.jsx'
 import AccountPage        from './pages/AccountPage.jsx'
 import OnboardingPage     from './pages/OnboardingPage.jsx'
 import AccountTypeChoice  from './flows/AccountTypeChoice.jsx'
@@ -33,15 +35,9 @@ export default function App() {
     setView("article")
   }
 
-  function handleStartReg(trigger) {
-    if (trigger === "business") {
-      setSelectedPlan(null); setView("business")
-    } else if (trigger && trigger.startsWith("personal_")) {
-      const planId = trigger.replace("personal_", "")
-      setSelectedPlan(planId === "check" ? null : planId); setView("personal")
-    } else {
-      setSelectedPlan(null); setView("choice")
-    }
+  function handleSelectPlan(planId) {
+    setSelectedPlan(planId)
+    setView("personal")
   }
 
   function handleRegComplete(isBusiness) {
@@ -60,22 +56,32 @@ export default function App() {
         <ArticlePage
           loggedIn={loggedIn} userEmail={userEmail}
           onLogin={() => setModal("login")}
-          onSubscribe={() => setView("subscriptions")}
+          onSubscribe={() => setView("choice")}
           onLogout={handleLogout}
           onAccount={() => setView("account")}
         />
       )}
       {view === "subscriptions" && (
-        <SubscriptionPage onStartReg={handleStartReg} onLogin={() => setModal("login")} />
+        <SubscriptionPage onStartReg={(trigger) => {
+          if (trigger === "business") setView("business")
+          else if (trigger && trigger.startsWith("personal_")) { setSelectedPlan(trigger.replace("personal_","")); setView("personal") }
+          else setView("choice")
+        }} onLogin={() => setModal("login")} />
       )}
       {view === "choice" && (
-        <AccountTypeChoice onChoose={t => setView(t==="business"?"business":"personal")} onBack={() => setView("subscriptions")} />
+        <AccountTypeChoice onChoose={t => setView(t==="business"?"bizplans":"plans")} onBack={() => setView("article")} />
+      )}
+      {view === "plans" && (
+        <PlanPickerPage onSelectPlan={handleSelectPlan} onSwitchToBusiness={() => setView("bizplans")} onBack={() => setView("choice")} />
+      )}
+      {view === "bizplans" && (
+        <BusinessPlanPickerPage onSelectPlan={(id) => { setSelectedPlan(id); setView("business") }} onSwitchToPersonal={() => setView("plans")} onBack={() => setView("choice")} />
       )}
       {view === "personal" && (
-        <PersonalFlow selectedPlan={selectedPlan} onComplete={handleRegComplete} onBack={() => setView("subscriptions")} onGoLogin={handleGoLogin} />
+        <PersonalFlow selectedPlan={selectedPlan} onComplete={handleRegComplete} onBack={() => setView("plans")} onGoLogin={handleGoLogin} />
       )}
       {view === "business" && (
-        <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("subscriptions")} onGoLogin={handleGoLogin} />
+        <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} onGoLogin={handleGoLogin} />
       )}
       {view === "onboarding" && (
         <OnboardingPage
