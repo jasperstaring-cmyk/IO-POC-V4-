@@ -2,11 +2,22 @@ import { useState } from 'react'
 import { C } from '../tokens.js'
 import { JOB_ROLES } from '../data.js'
 import { classifyEmailForReg } from '../utils.js'
-import { ProgressBar, RegSidebar, EmailChip, AuthNav, CheckItem, LangSwitcher } from '../components/shared.jsx'
+import { TopProgressBar, RegSidebar, EmailChip, AuthNav, CheckItem, LangSwitcher } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
 import IOLogo from '../components/IOLogo.jsx'
 
-// ─── Volledige plan-keuze pagina (zelfde look als SubscriptionPage) ─────────
+// ─── Plan metadata (voor sidebar) ───────────────────────────────────────────
+function planMeta(planId, t) {
+  if (!planId) return {}
+  const map = {
+    freemium: { name: "Freemium",   price: null,                          cta: null,                                                        features: t("plan_freemium_features") || [] },
+    trial:    { name: "Pro Trial",   price: t("plan_trial_price") + " " + (t("plan_trial_suffix") || ""), cta: t("sidebar_trial_cta"), features: t("plan_trial_features") || [] },
+    pro:      { name: "Pro",         price: t("plan_pro_price") + " " + (t("plan_pro_suffix") || ""),     cta: null,                                                        features: t("plan_pro_features") || [] },
+  }
+  return map[planId] || {}
+}
+
+// ─── Volledige plan-keuze pagina (met groene CTA buttons) ───────────────────
 function PlanPickerPage({ onSelect, onBack, t }) {
   const PLANS = [
     { id:"freemium", name:"Freemium", sub:t("plan_freemium_sub"), priceLabel:t("plan_freemium_price"), priceSuffix:"",                  cta:t("plan_freemium_cta"), ctaNote:t("plan_freemium_note"), features:t("plan_freemium_features")||[] },
@@ -15,8 +26,9 @@ function PlanPickerPage({ onSelect, onBack, t }) {
   ]
   return (
     <div style={{ minHeight:"100vh", background:C.white }}>
+      <TopProgressBar total={4} current={2.5} />
       {/* Nav */}
-      <header style={{ position:"sticky", top:0, zIndex:50, background:C.white, borderBottom:`1px solid ${C.gray100}`, boxShadow:"0 1px 6px rgba(12,24,46,0.06)" }}>
+      <header style={{ position:"sticky", top:4, zIndex:50, background:C.white, borderBottom:`1px solid ${C.gray100}`, boxShadow:"0 1px 6px rgba(12,24,46,0.06)" }}>
         <div style={{ maxWidth:1120, margin:"0 auto", padding:"0 1.5rem", height:56, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <IOLogo />
           <div style={{ display:"flex", alignItems:"center", gap:"1rem" }}>
@@ -38,7 +50,7 @@ function PlanPickerPage({ onSelect, onBack, t }) {
 
         <p style={{ textAlign:"center", fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500, marginBottom:"2rem", lineHeight:"var(--lh-body)" }}>{t("sp_personal_intro")}</p>
 
-        {/* Plan kaarten — identiek aan SubscriptionPage */}
+        {/* Plan kaarten met groene CTA buttons */}
         <div className="sub-cards">
           {PLANS.map(p => (
             <div key={p.id} className="sub-card">
@@ -48,7 +60,7 @@ function PlanPickerPage({ onSelect, onBack, t }) {
                 <span className="sub-card-price">{p.priceLabel}</span>
                 {p.priceSuffix && <span className="sub-card-price-suffix"> {p.priceSuffix}</span>}
               </div>
-              <button className="btn-red" style={{ marginTop:"1rem" }} onClick={() => onSelect(p.id)}>{p.cta}</button>
+              <button className="btn-green" style={{ marginTop:"1rem" }} onClick={() => onSelect(p.id)}>{p.cta}</button>
               <p className="sub-card-note">{p.ctaNote}</p>
               <div className="sub-card-features">
                 <div className="sub-card-features-title">{t("sp_features_title")}</div>
@@ -77,6 +89,9 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
   const totalSteps  = chosenPlan === "pro" ? 4 : 3
   const STEP_NUM    = { email:1, private_warning:1, generic_block:1, existing:1, enterprise:1, whitelist:1, profile:2, plan:3, payment:3, confirm:4, done:4 }
   const currentStep = STEP_NUM[step] || 1
+
+  // Sidebar plan info
+  const meta = planMeta(chosenPlan, t)
 
   function handleEmailSubmit(e) {
     e.preventDefault()
@@ -149,10 +164,10 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
 
   return (
     <div className="reg-layout">
+      <TopProgressBar total={totalSteps} current={currentStep} />
       <AuthNav onBack={onBack} />
       <div className="reg-container">
         <div className="reg-main">
-          <ProgressBar total={totalSteps} current={currentStep} />
 
           {/* ── E-mail ── */}
           {step === "email" && (
@@ -173,7 +188,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
                   {t("pf_privacy_and")}{" "}
                   <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button">{t("pf_privacy_link")}.</button>
                 </p>
-                <button className="btn-primary btn-full" type="submit">{t("pf_check_email")}</button>
+                <button className="btn-green btn-full" type="submit">{t("pf_check_email")}</button>
               </form>
             </>
           )}
@@ -262,7 +277,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
                   </select>
                 </div>
                 <div className="input-group"><label className="input-label">{t("pf_password")}</label><input className="input-field" type="password" placeholder={t("pf_password_hint")} value={password} onChange={e => setPassword(e.target.value)} minLength={8} required /></div>
-                <button className="btn-primary btn-full" type="submit">{chosenPlan ? t("pf_profile_next") : t("pf_profile_create")}</button>
+                <button className="btn-green btn-full" type="submit">{chosenPlan ? t("pf_profile_next") : t("pf_profile_create")}</button>
               </form>
             </>
           )}
@@ -318,7 +333,14 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
           )}
 
         </div>
-        <div className="reg-sidebar"><RegSidebar /></div>
+        <div className="reg-sidebar">
+          <RegSidebar
+            planName={meta.name}
+            planPrice={meta.price}
+            planFeatures={meta.features}
+            planCta={meta.cta}
+          />
+        </div>
       </div>
     </div>
   )

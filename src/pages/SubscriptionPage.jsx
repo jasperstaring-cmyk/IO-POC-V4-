@@ -27,7 +27,7 @@ export function PlanCards({ onSelect }) {
             <span className="sub-card-price">{p.priceLabel}</span>
             {p.priceSuffix && <span className="sub-card-price-suffix"> {p.priceSuffix}</span>}
           </div>
-          <button className="btn-red" style={{ marginTop:"1rem" }} onClick={() => onSelect(p.id)}>
+          <button className="btn-green" style={{ marginTop:"1rem" }} onClick={() => onSelect(p.id)}>
             {p.cta}
           </button>
           <p className="sub-card-note">{p.ctaNote}</p>

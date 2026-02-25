@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
 import { SEGMENTS, PRODUCT_C_VARIANTS, JOB_ROLES } from '../data.js'
-import { ProgressBar, RegSidebar, SelectionRow, EmailChip, BackButton, AuthNav } from '../components/shared.jsx'
+import { TopProgressBar, RegSidebar, SelectionRow, EmailChip, BackButton, AuthNav } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
 
 export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
@@ -51,10 +51,10 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
 
   return (
     <div className="reg-layout">
+      <TopProgressBar total={TOTAL} current={curr} />
       <AuthNav onBack={onBack} />
       <div className="reg-container">
         <div className="reg-main">
-          <ProgressBar total={TOTAL} current={curr} />
 
           {/* ── Stap 1: Gegevens ── */}
           {step === "email" && (

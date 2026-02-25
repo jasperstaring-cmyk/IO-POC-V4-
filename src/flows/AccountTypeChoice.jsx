@@ -1,17 +1,17 @@
 import { C } from '../tokens.js'
-import { ProgressBar, RegSidebar, AuthNav } from '../components/shared.jsx'
+import { TopProgressBar, RegSidebar, AuthNav } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
 
 export default function AccountTypeChoice({ onChoose, onBack }) {
   const { t } = useLang()
   return (
     <div className="reg-layout">
+      <TopProgressBar total={4} current={0.5} />
       <AuthNav onBack={onBack} />
       <div className="reg-container">
         <div className="reg-main">
-          <ProgressBar total={4} current={1} />
 
-          <div style={{ display:"inline-block", background:C.gray100, borderRadius:99, padding:"0.2rem 0.875rem", fontFamily:"var(--font-sans)", fontSize:"0.75rem", fontWeight:700, color:C.gray500, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:"1rem" }}>
+          <div style={{ display:"inline-block", background:"rgba(224,27,65,0.08)", borderRadius:99, padding:"0.25rem 0.875rem", fontFamily:"var(--font-sans)", fontSize:"0.75rem", fontWeight:700, color:C.red, letterSpacing:"0.06em", marginBottom:"1rem" }}>
             {t("choice_badge")}
           </div>
 

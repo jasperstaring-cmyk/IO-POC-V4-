@@ -10,6 +10,9 @@ export const translations = {
     // ── Auth nav / sidebar ──
     sidebar_usp_title:   "Door een account aan te maken krijg je",
     sidebar_plan_label:  "Jouw gekozen abonnement",
+    sidebar_price_label: "Jouw prijs",
+    sidebar_features_label: "Wat krijg je:",
+    sidebar_trial_cta:   "10 dagen gratis proberen — stopt automatisch",
     sidebar_help_title:  "Kom je er niet uit?",
     sidebar_help_sub:    "We helpen je graag verder",
     sidebar_help_cta:    "Neem contact met ons op",
@@ -435,6 +438,9 @@ export const translations = {
     // ── Auth nav / sidebar ──
     sidebar_usp_title:   "By creating an account you get",
     sidebar_plan_label:  "Your chosen subscription",
+    sidebar_price_label: "Your price",
+    sidebar_features_label: "What you get:",
+    sidebar_trial_cta:   "Try 10 days free — stops automatically",
     sidebar_help_title:  "Need help?",
     sidebar_help_sub:    "We are happy to assist you",
     sidebar_help_cta:    "Contact us",

@@ -168,7 +168,7 @@ export function RegSidebar({ planName, planPrice, planFeatures, planCta }) {
             {/* Gekozen plan dropdown-stijl */}
             <div style={{ border:`1.5px solid ${C.gray200}`, borderRadius:6, padding:"0.75rem 1rem", marginBottom:"1rem" }}>
               <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.65rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.25rem" }}>
-                {t("sidebar_plan_label") || "JE HEBT GEKOZEN VOOR:"}
+                {t("sidebar_plan_label")}
               </div>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy }}>{planName}</div>
@@ -180,7 +180,7 @@ export function RegSidebar({ planName, planPrice, planFeatures, planCta }) {
             {planPrice && (
               <div style={{ marginBottom:"1rem" }}>
                 <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.65rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.25rem" }}>
-                  JOUW PRIJS
+                  {t("sidebar_price_label")}
                 </div>
                 <div style={{ fontFamily:"var(--font-sans)", fontSize:"1.75rem", fontWeight:700, color:C.navy, lineHeight:1 }}>
                   {planPrice}
@@ -197,7 +197,7 @@ export function RegSidebar({ planName, planPrice, planFeatures, planCta }) {
 
             {/* Features */}
             <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.75rem" }}>
-              WAT KRIJG JE:
+              {t("sidebar_features_label")}
             </div>
           </>
         ) : (
