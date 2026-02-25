@@ -81,9 +81,6 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
               <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"2rem" }}>
                 {t("lm_intro")}
               </p>
-              <div className="demo-hint" style={{ marginBottom:"1.5rem" }}>
-                <strong>Demo:</strong> {t("lm_demo_hint")}
-              </div>
               <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={handleEmailSubmit}>
                 <div className="input-group">
                   <label className="input-label">{t("lm_email_label")}</label>

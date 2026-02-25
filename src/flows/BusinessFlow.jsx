@@ -135,9 +135,6 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
             <>
               <h2 className="reg-step-title">{t("bf_email_title")}</h2>
               <p className="reg-step-sub">{t("bf_email_sub")}</p>
-              <div className="demo-hint">
-                <strong>Demo:</strong> {t("bf_demo_hint")}
-              </div>
               <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={handleEmailSubmit}>
                 <div className="input-group">
                   <label className="input-label">{t("bf_email_label")}</label>
@@ -401,7 +398,6 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                   <div className="input-group"><label className="input-label">{t("bf_payment_expiry")}</label><input className="input-field" type="text" placeholder="12 / 28" disabled style={{ background:C.gray50 }} /></div>
                   <div className="input-group"><label className="input-label">{t("bf_payment_cvc")}</label><input className="input-field" type="text" placeholder="123" disabled style={{ background:C.gray50 }} /></div>
                 </div>
-                <div className="demo-hint" style={{ marginTop:"0.5rem" }}><strong>Demo:</strong> {t("bf_payment_demo")}</div>
               </div>
               <div className="reg-nav-bar">
                 <BackButton onClick={() => setStep("overview")} />

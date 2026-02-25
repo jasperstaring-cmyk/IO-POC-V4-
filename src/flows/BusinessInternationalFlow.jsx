@@ -103,7 +103,6 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
             <>
               <h2 className="reg-step-title">{t("bi_title")}</h2>
               <p className="reg-step-sub">{t("bi_sub")}</p>
-              <div className="demo-hint"><strong>Demo:</strong> {t("bi_demo_hint")}</div>
               <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={e => { e.preventDefault(); setStep("segment") }}>
                 <div className="input-group"><label className="input-label">{t("bf_email_label")}</label><input className="input-field" type="text" inputMode="email" placeholder={t("bf_email_placeholder")} value={email} onChange={e => setEmail(e.target.value)} autoFocus required /></div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
@@ -297,7 +296,6 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
                   <div className="input-group"><label className="input-label">{t("bf_payment_expiry")}</label><input className="input-field" type="text" placeholder="12 / 28" disabled style={{ background:C.gray50 }} /></div>
                   <div className="input-group"><label className="input-label">{t("bf_payment_cvc")}</label><input className="input-field" type="text" placeholder="123" disabled style={{ background:C.gray50 }} /></div>
                 </div>
-                <div className="demo-hint" style={{ marginTop:"0.5rem" }}><strong>Demo:</strong> {t("bf_payment_demo")}</div>
               </div>
               <div className="reg-nav-bar"><BackButton onClick={() => setStep("overview")} /><button className="btn-red btn-full" onClick={() => setStep("invite")}>{t("bf_payment_cta")} € {formatPrice(yr)},– {t("bf_payment_activate")}</button></div>
             </>

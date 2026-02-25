@@ -109,9 +109,6 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
             <>
               <h2 className="reg-step-title">{t("pf_email_title")}</h2>
               <p className="reg-step-sub">{t("pf_email_sub")}</p>
-              <div className="demo-hint">
-                <strong>Demo:</strong> info@aegon.com · nieuw@gmail.com · demo@abnamro.com · nieuw@abnamro.com · nieuw@wealthpro.com · nieuw@aegon.com
-              </div>
               <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={handleEmailSubmit}>
                 <div className="input-group">
                   <label className="input-label">{t("pf_email_label")}</label>
