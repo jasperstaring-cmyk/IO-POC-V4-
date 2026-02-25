@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './styles/global.css'
 
 import ArticlePage        from './pages/ArticlePage.jsx'
@@ -13,6 +13,13 @@ import BusinessFlow       from './flows/BusinessFlow.jsx'
 import BusinessInternationalFlow from './flows/BusinessInternationalFlow.jsx'
 import EnterpriseFlow     from './flows/EnterpriseFlow.jsx'
 import LoginModal         from './flows/LoginModal.jsx'
+import { useLang }        from './LanguageContext.jsx'
+
+/* Valid view names that can be targeted via hash */
+const VALID_VIEWS = new Set([
+  "article","login","choice","plans","bizplans","subscriptions",
+  "personal","business","bizintl","enterprise","onboarding","account",
+])
 
 export default function App() {
   const [view, setView]           = useState("article")
@@ -23,6 +30,42 @@ export default function App() {
   const [activePlanType, setActivePlanType] = useState("freemium")
   const [userData, setUserData]   = useState({ firstName:"Jasper", lastName:"", email:"", jobRole:"Portfolio Manager", initials:"J" })
 
+  const { setLang } = useLang()
+
+  /* ── Hash routing ── */
+  const handleHash = useCallback(() => {
+    const hash = window.location.hash.replace("#", "")
+    if (!hash) return
+
+    // Language switch: #lang=de
+    if (hash.startsWith("lang=")) {
+      const code = hash.split("=")[1]
+      if (["en","nl","de","fr"].includes(code)) {
+        setLang(code)
+      }
+      // Clear hash so the pill can be clicked again
+      history.replaceState(null, "", window.location.pathname)
+      return
+    }
+
+    // View navigation: #login, #business, etc.
+    if (VALID_VIEWS.has(hash)) {
+      setView(hash)
+      // Clear hash after navigating
+      history.replaceState(null, "", window.location.pathname)
+    }
+  }, [setLang])
+
+  useEffect(() => {
+    // Handle initial hash on load
+    handleHash()
+    // Listen for hash changes (deep-link pills)
+    window.addEventListener("hashchange", handleHash)
+    return () => window.removeEventListener("hashchange", handleHash)
+  }, [handleHash])
+
+
+  /* ── Handlers ── */
   function handleLoginSuccess(email) {
     setLoggedIn(true)
     setUserEmail(email)
@@ -44,9 +87,9 @@ export default function App() {
 
   function handleRegComplete(isBusiness) {
     setLoggedIn(true)
-    setUserEmail("nieuw@example.com")
+    setUserEmail("new@example.com")
     setActivePlanType(isBusiness ? "business" : selectedPlan || "freemium")
-    setUserData({ firstName:"Nieuw", lastName:"Gebruiker", email:"nieuw@example.com", jobRole:"Portfolio Manager", initials:"N" })
+    setUserData({ firstName:"New", lastName:"User", email:"new@example.com", jobRole:"Portfolio Manager", initials:"N" })
     setView("onboarding")
   }
 

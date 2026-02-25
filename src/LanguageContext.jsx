@@ -4,7 +4,7 @@ import { translations } from './i18n.js'
 const LanguageContext = createContext()
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState("nl")
+  const [lang, setLang] = useState("en")
   const t = (key) => translations[lang]?.[key] ?? translations["nl"]?.[key] ?? key
   // Translate segment name/desc by id
   const tSeg = (segId, field) => t(`seg_${segId}_${field}`)
