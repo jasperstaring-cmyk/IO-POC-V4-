@@ -381,7 +381,7 @@ const MOCK_USERS = [
 ]
 const MAX_SEATS = 16
 
-function GebruikersSection({ planType }) {
+function GebruikersSection({ planType, onSimulateInvite }) {
   const { t } = useLang()
   const isBusiness = planType === "business"
   const [users, setUsers]         = useState(MOCK_USERS)
@@ -537,12 +537,37 @@ function GebruikersSection({ planType }) {
           </div>
         </div>
       )}
+
+      {/* ── POC: simulate invitation link ── */}
+      {onSimulateInvite && (
+        <div style={{ marginTop:"1.25rem", border:`2px dashed ${C.gray300}`, borderRadius:10, padding:"1.25rem 1.5rem", background:C.gray50 }}>
+          <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.5rem" }}>
+            POC — Simulate invitation
+          </div>
+          <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray700, lineHeight:"var(--lh-body)", marginBottom:"1rem" }}>
+            Test what an invited colleague sees when they click the invitation link in their e-mail.
+          </p>
+          <div style={{ display:"flex", gap:"0.75rem", flexWrap:"wrap" }}>
+            {users.filter(u => u.pending).map(u => (
+              <button key={u.email} onClick={() => onSimulateInvite(u.email, "Aegon", planType)}
+                style={{ background:C.navy, color:C.white, border:"none", borderRadius:6, padding:"0.5rem 1rem", fontFamily:"var(--font-sans)", fontSize:"0.8125rem", fontWeight:600, cursor:"pointer" }}>
+                Open as {u.email.split("@")[0]}
+              </button>
+            ))}
+            {users.filter(u => u.pending).length === 0 && (
+              <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500, fontStyle:"italic" }}>
+                Invite a colleague first to simulate their experience.
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 // ─── Main AccountPage ─────────────────────────────────────────────────────────
-export default function AccountPage({ user, planType, onBack }) {
+export default function AccountPage({ user, planType, onBack, onSimulateInvite }) {
   const { t } = useLang()
   const [section, setSection]     = useState("account")
   const [currentUser, setCurrentUser] = useState(user)
@@ -566,7 +591,7 @@ export default function AccountPage({ user, planType, onBack }) {
             {section === "account"      && <AccountSection user={currentUser} onUpdate={setCurrentUser} />}
             {section === "nieuwsbrief"  && <NewsletterSection />}
             {section === "abonnementen" && <AbonnementenSection planType={planType} />}
-            {section === "gebruikers"   && <GebruikersSection planType={planType} />}
+            {section === "gebruikers"   && <GebruikersSection planType={planType} onSimulateInvite={onSimulateInvite} />}
             {section === "facturatie"   && <FacturatieSection />}
           </div>
         </div>

@@ -1,8 +1,268 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
 
+/* ════════════════════════════════════════════════════════════════════════
+   POC Guide – overlay content
+   ════════════════════════════════════════════════════════════════════════ */
+function PocGuide({ onClose }) {
+  const S = {
+    overlay: {
+      position:"fixed", inset:0, zIndex:99999,
+      background:"rgba(10,20,40,0.7)", backdropFilter:"blur(4px)",
+      display:"flex", alignItems:"center", justifyContent:"center",
+      padding:"2rem",
+    },
+    modal: {
+      background:C.white, borderRadius:16, maxWidth:820, width:"100%",
+      maxHeight:"88vh", overflowY:"auto", position:"relative",
+      boxShadow:"0 24px 80px rgba(0,0,0,0.25)",
+    },
+    header: {
+      position:"sticky", top:0, background:C.navy, color:C.white,
+      padding:"1.75rem 2.25rem 1.5rem", borderRadius:"16px 16px 0 0",
+      zIndex:1,
+    },
+    body: { padding:"2rem 2.25rem 2.5rem" },
+    h1: {
+      fontFamily:"var(--font-serif)", fontSize:"1.5rem", fontWeight:700,
+      color:C.white, margin:0, lineHeight:1.3,
+    },
+    subtitle: {
+      fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:"rgba(255,255,255,0.65)",
+      marginTop:"0.5rem", lineHeight:1.6,
+    },
+    closeBtn: {
+      position:"absolute", top:"1.25rem", right:"1.25rem",
+      background:"rgba(255,255,255,0.1)", border:"none", borderRadius:8,
+      width:36, height:36, cursor:"pointer", display:"flex",
+      alignItems:"center", justifyContent:"center", color:C.white,
+    },
+    sectionTitle: {
+      fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700,
+      letterSpacing:"0.08em", textTransform:"uppercase", color:C.green,
+      marginBottom:"0.625rem", marginTop:"1.75rem",
+    },
+    sectionTitleFirst: {
+      fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700,
+      letterSpacing:"0.08em", textTransform:"uppercase", color:C.green,
+      marginBottom:"0.625rem", marginTop:0,
+    },
+    card: {
+      background:C.gray50, borderRadius:10, padding:"1rem 1.25rem",
+      marginBottom:"0.625rem", border:`1px solid ${C.gray200}`,
+    },
+    cardTitle: {
+      fontFamily:"var(--font-sans)", fontSize:"0.875rem", fontWeight:700,
+      color:C.navy, marginBottom:"0.25rem",
+    },
+    cardBody: {
+      fontFamily:"var(--font-sans)", fontSize:"0.8rem", color:C.gray500,
+      lineHeight:1.65,
+    },
+    email: {
+      fontFamily:"monospace", fontSize:"0.75rem", background:"rgba(78,213,150,0.12)",
+      padding:"0.1rem 0.4rem", borderRadius:3, color:C.navy, whiteSpace:"nowrap",
+    },
+    step: {
+      display:"inline-block", fontFamily:"var(--font-sans)", fontSize:"0.7rem",
+      background:C.navy, color:C.white, padding:"0.1rem 0.45rem",
+      borderRadius:3, marginRight:"0.25rem", fontWeight:600,
+    },
+    divider: {
+      border:"none", borderTop:`1px solid ${C.gray200}`,
+      margin:"1.5rem 0",
+    },
+    note: {
+      fontFamily:"var(--font-sans)", fontSize:"0.75rem", color:C.gray500,
+      lineHeight:1.6, fontStyle:"italic",
+    },
+  }
+
+  return (
+    <div style={S.overlay} onClick={onClose}>
+      <div style={S.modal} onClick={e => e.stopPropagation()}>
+
+        {/* ── Header ── */}
+        <div style={S.header}>
+          <h1 style={S.h1}>Investment Officer — POC Guide</h1>
+          <p style={S.subtitle}>
+            This prototype demonstrates the new subscription and onboarding flows for Investment Officer.
+            Below you'll find all scenarios you can walk through.
+          </p>
+          <button style={S.closeBtn} onClick={onClose}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        {/* ── Body ── */}
+        <div style={S.body}>
+
+          {/* ── 1. Account types ── */}
+          <div style={S.sectionTitleFirst}>1. Account types</div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Personal (gratis)</div>
+            <div style={S.cardBody}>Individual account with access to a selection of articles, newsletters and profile management. Optionally upgradable to Pro.</div>
+          </div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Business NL</div>
+            <div style={S.cardBody}>Business account for the Dutch edition. Shared environment with user management. Free for Wealth/Institutional segment, otherwise 6-month free trial.</div>
+          </div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Business International</div>
+            <div style={S.cardBody}>Business account with access to all editions (NL, BE, DE, FR, LU, COM). Package choice S/M/L/XL. 50% discount for Wealth/Institutional segment.</div>
+          </div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Enterprise</div>
+            <div style={S.cardBody}>Free access at organisation level, managed by Investment Officer. Two variants: Enterprise NL (1 edition) and Enterprise All (all editions). No payment, no subscription choice.</div>
+          </div>
+
+          <hr style={S.divider} />
+
+          {/* ── 2. Use cases ── */}
+          <div style={S.sectionTitle}>2. Use cases to test</div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🟢 Enterprise — domain-based (ABN AMRO)</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>anything@abnamro.com</span><br/>
+              <strong>Via Login:</strong> email → SSO screen (Google / Microsoft / password) → logged in<br/>
+              <strong>Via Registration (Personal):</strong> email → enterprise detection → create profile → done<br/>
+              <strong>Via Registration (Business):</strong> email → "Continue as Enterprise" → profile → done<br/>
+              <span style={S.step}>2 steps</span> profile → done
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🟢 Enterprise — whitelist NL (WealthPro)</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>new@wealthpro.com</span><br/>
+              <strong>Via Login:</strong> email → "Enterprise access available" + "Dutch edition" → create profile<br/>
+              <strong>Via Registration:</strong> email → whitelist detection → profile → done<br/>
+              Sidebar shows "Enterprise — NL"<br/>
+              <span style={S.step}>2 steps</span> profile → done
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🟢 Enterprise — whitelist All (GlobalFund)</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>new@globalfund.com</span><br/>
+              Same flow as WealthPro, but with access to all editions.<br/>
+              Sidebar shows "Enterprise — All editions"
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🔵 Personal — standard</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>new@aegon.com</span> or any new business email address<br/>
+              <strong>Registration:</strong> email → profile → plan choice (Free / Pro / Trial) → done<br/>
+              <span style={S.step}>4 steps</span> email → profile → plan → done
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🔵 Business NL — standard</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>new@aegon.com</span> via "Team / Organisation" → Business NL<br/>
+              <strong>Registration:</strong> email → profile → segment → type → company details → overview → invite colleagues → done<br/>
+              <span style={S.step}>8 steps</span>
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🔵 Business International — standard</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>new@aegon.com</span> via "Team / Organisation" → Business International<br/>
+              <strong>Registration:</strong> email → profile → segment → type → package choice → company → overview → payment → invite → done<br/>
+              <span style={S.step}>10 steps</span>
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🟡 Existing account</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>demo@aegon.com</span><br/>
+              <strong>Via Login:</strong> email → password → logged in<br/>
+              <strong>Via Registration:</strong> email → "You already have an account" warning
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🟡 Private email</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>new@gmail.com</span><br/>
+              Warning "this is a private email address" with option to continue anyway.
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🟡 Generic address</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>info@company.com</span><br/>
+              Blocked: "Please use a personal email address."
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🟡 Trial block (Business)</div>
+            <div style={S.cardBody}>
+              Use: <span style={S.email}>trial@company.com</span> in Business NL flow<br/>
+              Email → 2-year block notification → choice of paid packages S/M/L/XL.
+            </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>🟣 Invited user</div>
+            <div style={S.cardBody}>
+              <strong>Option A:</strong> Deep link <span style={S.email}>#invited</span> (simulates colleague@aegon.com)<br/>
+              <strong>Option B:</strong> Go to Account → Users → invite someone → click "Open as…"<br/>
+              Flow: create profile (email pre-filled, "invited" banner) → done<br/>
+              <span style={S.step}>2 steps</span> profile → done
+            </div>
+          </div>
+
+          <hr style={S.divider} />
+
+          {/* ── 3. Pricing rules ── */}
+          <div style={S.sectionTitle}>3. Pricing logic</div>
+          <div style={S.card}>
+            <div style={S.cardBody}>
+              <strong>Business NL:</strong> Wealth/Institutional segment → free ongoing access. Other segments → 6-month free trial.<br/>
+              <strong>Business International:</strong> Wealth/Institutional → 50% discount on all packages. Other segments → standard rate.<br/>
+              <strong>Enterprise:</strong> Always free. Edition(s) determined by back-end configuration.
+            </div>
+          </div>
+
+          <hr style={S.divider} />
+
+          {/* ── 4. Navigation tips ── */}
+          <div style={S.sectionTitle}>4. Navigation</div>
+          <div style={S.card}>
+            <div style={S.cardBody}>
+              Use the <strong>deep links</strong> in the test panel to jump to specific screens.
+              Switch language via the language button in the top right (NL / EN / DE / FR).
+              After registration you'll land on the <strong>onboarding page</strong> and can proceed to <strong>Account management</strong>.
+            </div>
+          </div>
+
+          <hr style={S.divider} />
+          <p style={S.note}>
+            This is a clickable prototype. Stripe payment screens are simulations. Passwords are not validated. All data is fictional.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   DemoBanner — top bar with test panel + POC Guide button
+   ════════════════════════════════════════════════════════════════════════ */
 export default function DemoBanner() {
   const [open, setOpen] = useState(false)
+  const [guideOpen, setGuideOpen] = useState(false)
 
   /* ── Deep-link pills ── */
   const deepLinks = [
@@ -17,18 +277,21 @@ export default function DemoBanner() {
     { label: "Subscriptions",     hash: "#subscriptions" },
     { label: "Onboarding",        hash: "#onboarding" },
     { label: "Account",           hash: "#account" },
+    { label: "Invited user",      hash: "#invited" },
   ]
 
-  /* ── Test accounts (compact — one entry per email) ── */
+  /* ── Test accounts ── */
   const accounts = [
-    { email: "demo@abnamro.com",    scenarios: "Login → SSO/Enterprise · Register → enterprise domain detected" },
     { email: "demo@aegon.com",      scenarios: "Login → password flow · Register → existing account warning" },
-    { email: "new@aegon.com",       scenarios: "Register → normal flow (known domain)" },
-    { email: "new@wealthpro.com",   scenarios: "Register → whitelisted domain (fast track)" },
+    { email: "new@aegon.com",       scenarios: "Register → normal flow (known domain, no special treatment)" },
+    { email: "Any @abnamro.com",    scenarios: "Login → SSO/Enterprise · Register → Enterprise detected → profile only" },
+    { email: "new@wealthpro.com",   scenarios: "Login / Register → Enterprise NL (1 editie, gratis)" },
+    { email: "new@globalfund.com",  scenarios: "Login / Register → Enterprise All (alle edities, gratis)" },
     { email: "new@gmail.com",       scenarios: "Login → private email warning · Register → private email warning" },
     { email: "info@company.com",    scenarios: "Register → generic address rejected" },
     { email: "user@unknown.com",    scenarios: "Login → no account found" },
     { email: "trial@company.com",   scenarios: "Business reg. → 2-year block → paid plans" },
+    { email: "colleague@aegon.com", scenarios: "Invited user → profile-only registration (use deep link or invite from Account)" },
   ]
 
   /* ── Business rules ── */
@@ -45,109 +308,131 @@ export default function DemoBanner() {
     whiteSpace:"nowrap",
   }
 
+  const guideBtnStyle = {
+    ...pillStyle,
+    background:"rgba(78,213,150,0.15)", border:`1px solid ${C.green}`,
+    color:C.green, fontWeight:700, fontSize:"0.65rem",
+    padding:"0.25rem 0.75rem", cursor:"pointer",
+  }
+
   return (
-    <div style={{
-      position:"relative", top:0, left:0, right:0, zIndex:9999,
-      background:C.navy, color:"rgba(255,255,255,0.9)",
-      fontFamily:"var(--font-sans)", fontSize:"0.75rem",
-    }}>
-      {/* Toggle bar */}
-      <button onClick={() => setOpen(o => !o)} style={{
-        width:"100%", display:"flex", alignItems:"center", justifyContent:"center",
-        gap:"0.5rem", padding:"0.4rem 1rem", background:"none", border:"none",
-        color:"rgba(255,255,255,0.7)", cursor:"pointer", fontFamily:"var(--font-sans)",
-        fontSize:"0.7rem", letterSpacing:"0.06em", textTransform:"uppercase",
+    <>
+      <div style={{
+        position:"relative", top:0, left:0, right:0, zIndex:9999,
+        background:C.navy, color:"rgba(255,255,255,0.9)",
+        fontFamily:"var(--font-sans)", fontSize:"0.75rem",
       }}>
-        <span style={{ background:"rgba(255,255,255,0.15)", padding:"0.15rem 0.5rem", borderRadius:4, fontWeight:700, color:C.green }}>
-          POC
-        </span>
-        {open ? "Hide test panel" : "Show test panel"}
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: open ? "rotate(180deg)" : "none", transition:"transform 0.2s" }}>
-          <path d="M3 5l3 3 3-3" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
-
-      {/* Collapsible content */}
-      {open && (
+        {/* Toggle bar */}
         <div style={{
-          maxHeight:"70vh", overflowY:"auto",
-          padding:"0.5rem 2rem 1.25rem",
-          borderTop:"1px solid rgba(255,255,255,0.1)",
+          width:"100%", display:"flex", alignItems:"center", justifyContent:"center",
+          gap:"0.5rem", padding:"0.4rem 1rem",
         }}>
+          <button onClick={() => setOpen(o => !o)} style={{
+            display:"flex", alignItems:"center", gap:"0.5rem",
+            background:"none", border:"none",
+            color:"rgba(255,255,255,0.7)", cursor:"pointer", fontFamily:"var(--font-sans)",
+            fontSize:"0.7rem", letterSpacing:"0.06em", textTransform:"uppercase",
+          }}>
+            <span style={{ background:"rgba(255,255,255,0.15)", padding:"0.15rem 0.5rem", borderRadius:4, fontWeight:700, color:C.green }}>
+              POC
+            </span>
+            {open ? "Hide test panel" : "Show test panel"}
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: open ? "rotate(180deg)" : "none", transition:"transform 0.2s" }}>
+              <path d="M3 5l3 3 3-3" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button style={guideBtnStyle} onClick={() => setGuideOpen(true)}
+            onMouseEnter={e => { e.target.style.background="rgba(78,213,150,0.25)" }}
+            onMouseLeave={e => { e.target.style.background="rgba(78,213,150,0.15)" }}>
+            📖 POC Guide
+          </button>
+        </div>
 
-          {/* ── Deep-link pills ── */}
-          <div style={{ marginBottom:"1rem" }}>
-            <div style={{ fontWeight:700, fontSize:"0.65rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.green, marginBottom:"0.4rem" }}>
-              Jump to screen
-            </div>
-            <div style={{ display:"flex", flexWrap:"wrap", gap:"0.3rem" }}>
-              {deepLinks.map((dl) => (
-                <a key={dl.hash} href={dl.hash} style={pillStyle}
-                   onMouseEnter={e => { e.target.style.background="rgba(255,255,255,0.2)" }}
-                   onMouseLeave={e => { e.target.style.background="rgba(255,255,255,0.1)" }}>
-                  {dl.label}
-                </a>
-              ))}
-            </div>
-          </div>
+        {/* Collapsible content */}
+        {open && (
+          <div style={{
+            maxHeight:"70vh", overflowY:"auto",
+            padding:"0.5rem 2rem 1.25rem",
+            borderTop:"1px solid rgba(255,255,255,0.1)",
+          }}>
 
-          {/* ── Two-column: accounts + rules ── */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem 2rem" }}>
-
-            {/* Test accounts */}
-            <div>
+            {/* ── Deep-link pills ── */}
+            <div style={{ marginBottom:"1rem" }}>
               <div style={{ fontWeight:700, fontSize:"0.65rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.green, marginBottom:"0.4rem" }}>
-                Test e-mail accounts
+                Jump to screen
               </div>
-              {accounts.map((a, i) => (
-                <div key={i} style={{ marginBottom:"0.35rem", lineHeight:1.5 }}>
-                  <code style={{ background:"rgba(255,255,255,0.1)", padding:"0.1rem 0.375rem", borderRadius:3, fontSize:"0.7rem", whiteSpace:"nowrap" }}>
-                    {a.email}
-                  </code>
-                  <span style={{ color:"rgba(255,255,255,0.45)", fontSize:"0.65rem", marginLeft:"0.4rem" }}>
-                    {a.scenarios}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Business rules + language */}
-            <div>
-              <div style={{ fontWeight:700, fontSize:"0.65rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.green, marginBottom:"0.4rem" }}>
-                Segment pricing rules
-              </div>
-              {rules.map((r, i) => (
-                <div key={i} style={{ marginBottom:"0.35rem", lineHeight:1.5 }}>
-                  <code style={{ background:"rgba(255,255,255,0.1)", padding:"0.1rem 0.375rem", borderRadius:3, fontSize:"0.7rem", whiteSpace:"nowrap" }}>
-                    {r.rule}
-                  </code>
-                  <span style={{ color:"rgba(255,255,255,0.45)", fontSize:"0.65rem", marginLeft:"0.4rem" }}>
-                    {r.effect}
-                  </span>
-                </div>
-              ))}
-
-              <div style={{ marginTop:"0.75rem", fontWeight:700, fontSize:"0.65rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.green, marginBottom:"0.4rem" }}>
-                Language
-              </div>
-              <div style={{ display:"flex", gap:"0.3rem" }}>
-                {["en","nl","de","fr"].map(code => (
-                  <a key={code} href={`#lang=${code}`} style={pillStyle}
+              <div style={{ display:"flex", flexWrap:"wrap", gap:"0.3rem" }}>
+                {deepLinks.map((dl) => (
+                  <a key={dl.hash} href={dl.hash} style={pillStyle}
                      onMouseEnter={e => { e.target.style.background="rgba(255,255,255,0.2)" }}
                      onMouseLeave={e => { e.target.style.background="rgba(255,255,255,0.1)" }}>
-                    {code.toUpperCase()}
+                    {dl.label}
                   </a>
                 ))}
               </div>
             </div>
 
-          </div>
+            {/* ── Two-column: accounts + rules ── */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem 2rem" }}>
 
-          <div style={{ marginTop:"0.75rem", paddingTop:"0.625rem", borderTop:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.4)", fontSize:"0.65rem" }}>
-            Stripe payment screens are simulations. Passwords are not validated. All data is fictional.
+              {/* Test accounts */}
+              <div>
+                <div style={{ fontWeight:700, fontSize:"0.65rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.green, marginBottom:"0.4rem" }}>
+                  Test e-mail accounts
+                </div>
+                {accounts.map((a, i) => (
+                  <div key={i} style={{ marginBottom:"0.35rem", lineHeight:1.5 }}>
+                    <code style={{ background:"rgba(255,255,255,0.1)", padding:"0.1rem 0.375rem", borderRadius:3, fontSize:"0.7rem", whiteSpace:"nowrap" }}>
+                      {a.email}
+                    </code>
+                    <span style={{ color:"rgba(255,255,255,0.45)", fontSize:"0.65rem", marginLeft:"0.4rem" }}>
+                      {a.scenarios}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Business rules + language */}
+              <div>
+                <div style={{ fontWeight:700, fontSize:"0.65rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.green, marginBottom:"0.4rem" }}>
+                  Segment pricing rules
+                </div>
+                {rules.map((r, i) => (
+                  <div key={i} style={{ marginBottom:"0.35rem", lineHeight:1.5 }}>
+                    <code style={{ background:"rgba(255,255,255,0.1)", padding:"0.1rem 0.375rem", borderRadius:3, fontSize:"0.7rem", whiteSpace:"nowrap" }}>
+                      {r.rule}
+                    </code>
+                    <span style={{ color:"rgba(255,255,255,0.45)", fontSize:"0.65rem", marginLeft:"0.4rem" }}>
+                      {r.effect}
+                    </span>
+                  </div>
+                ))}
+
+                <div style={{ marginTop:"0.75rem", fontWeight:700, fontSize:"0.65rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.green, marginBottom:"0.4rem" }}>
+                  Language
+                </div>
+                <div style={{ display:"flex", gap:"0.3rem" }}>
+                  {["en","nl","de","fr"].map(code => (
+                    <a key={code} href={`#lang=${code}`} style={pillStyle}
+                       onMouseEnter={e => { e.target.style.background="rgba(255,255,255,0.2)" }}
+                       onMouseLeave={e => { e.target.style.background="rgba(255,255,255,0.1)" }}>
+                      {code.toUpperCase()}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            <div style={{ marginTop:"0.75rem", paddingTop:"0.625rem", borderTop:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.4)", fontSize:"0.65rem" }}>
+              Stripe payment screens are simulations. Passwords are not validated. All data is fictional.
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+      {/* ── POC Guide overlay ── */}
+      {guideOpen && <PocGuide onClose={() => setGuideOpen(false)} />}
+    </>
   )
 }

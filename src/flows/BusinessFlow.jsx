@@ -3,6 +3,7 @@ import { C } from '../tokens.js'
 import { SEGMENTS, JOB_ROLES, BUSINESS_SIZES } from '../data.js'
 import { TopProgressBar, RegSidebar, SelectionRow, EmailChip, BackButton, AuthNav } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
+import { classifyEmailForReg, getWhitelistInfo, getCompanyNameFromEmail } from '../utils.js'
 import IOLogo from '../components/IOLogo.jsx'
 
 /* ─── Segment → pricing logic ──────────────────────────────────────────── */
@@ -36,7 +37,7 @@ function getSidebarMeta(segId, isPaid, chosenSize, xlCount, t, tBiz) {
 function hadRecentTrial(email) { return email.toLowerCase().startsWith("trial@") }
 
 /* ─── Component ────────────────────────────────────────────────────────── */
-export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
+export default function BusinessFlow({ onComplete, onBack, onGoLogin, onGoEnterprise }) {
   const { t, tSeg, tType, tBiz } = useLang()
   const [step, setStep]             = useState("email")
   const [email, setEmail]           = useState("")
@@ -53,21 +54,29 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
   const [chosenSize, setChosenSize] = useState(null)
   const [xlUserCount, setXlUserCount] = useState("")
 
-  const STEP_NUM_FREE = { email:1, segment:2, type:3, company:4, overview:5, invite:6, done:7 }
-  const STEP_NUM_PAID = { email:1, trial_blocked:1, size_picker:2, segment:3, type:4, company:5, overview:6, payment:7, invite:8, done:9 }
+  const STEP_NUM_FREE = { email:1, profile:2, segment:3, type:4, company:5, overview:6, invite:7, done:8 }
+  const STEP_NUM_PAID = { email:1, trial_blocked:1, profile:2, size_picker:3, segment:4, type:5, company:6, overview:7, payment:8, invite:9, done:10 }
   const stepMap = isPaidFlow ? STEP_NUM_PAID : STEP_NUM_FREE
-  const TOTAL   = isPaidFlow ? 9 : 7
+  const TOTAL   = isPaidFlow ? 10 : 8
   const curr    = stepMap[step] || 1
 
   const selectedSegment = SEGMENTS.find(s => s.id === segment?.id)
   const sidebar = getSidebarMeta(segment?.id, isPaidFlow, chosenSize, parseInt(xlUserCount) || 16, t, tBiz)
 
+  const [emailClass, setEmailClass] = useState(null)
+
   function handleCompanyChange(f, v) { setCompany(prev => ({ ...prev, [f]: v })) }
 
   function handleEmailSubmit(e) {
     e.preventDefault()
+    const cls = classifyEmailForReg(email)
+    setEmailClass(cls)
+    if (cls === "generic" || cls === "private" || cls === "enterprise" || cls === "whitelist" || cls === "existing") {
+      // Stay on email step — show the appropriate message
+      return
+    }
     if (hadRecentTrial(email)) { setIsPaidFlow(true); setStep("trial_blocked"); return }
-    setStep("segment")
+    setStep("profile")
   }
 
   function handleSegmentNext() {
@@ -130,7 +139,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
       <div className="reg-container">
         <div className="reg-main">
 
-          {/* ── STAP 1: E-mail + Profiel ── */}
+          {/* ── STAP 1: E-mail ── */}
           {step === "email" && (
             <>
               <h2 className="reg-step-title">{t("bf_email_title")}</h2>
@@ -138,10 +147,71 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={handleEmailSubmit}>
                 <div className="input-group">
                   <label className="input-label">{t("bf_email_label")}</label>
-                  <input className="input-field" type="text" inputMode="email" placeholder={t("bf_email_placeholder")} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                  <input className="input-field" type="text" inputMode="email" placeholder={t("bf_email_placeholder")} value={email} onChange={e => { setEmail(e.target.value); setEmailClass(null) }} autoFocus required />
                 </div>
+
+                {/* Classification feedback */}
+                {emailClass === "generic" && (
+                  <div className="alert alert-warning" style={{ marginBottom:"1.25rem" }}>
+                    {t("pf_generic_warn")}
+                  </div>
+                )}
+                {emailClass === "private" && (
+                  <div className="alert alert-warning" style={{ marginBottom:"1.25rem" }}>
+                    {t("pf_private_warn")}
+                    <div style={{ marginTop:"0.75rem" }}>
+                      <button className="btn-green btn-full" type="button" onClick={() => { setEmailClass(null); setStep("profile") }}>{t("pf_private_continue")}</button>
+                    </div>
+                  </div>
+                )}
+                {emailClass === "existing" && (
+                  <div className="alert alert-warning" style={{ marginBottom:"1.25rem" }}>
+                    {t("pf_existing_warn")}
+                    <div style={{ marginTop:"0.75rem" }}>
+                      <button className="btn-green btn-full" type="button" onClick={() => { if (onGoLogin) onGoLogin() }}>{t("pf_existing_login")}</button>
+                    </div>
+                  </div>
+                )}
+                {emailClass === "enterprise" && (
+                  <div className="alert alert-success" style={{ marginBottom:"1.25rem" }}>
+                    {t("pf_enterprise_profile_note")} <strong>{getCompanyNameFromEmail(email) || t("inline_your_org")}</strong>.
+                    {" "}{t("bf_enterprise_redirect_short")}
+                    <div style={{ marginTop:"0.75rem" }}>
+                      <button className="btn-green btn-full" type="button" onClick={() => { if (onGoEnterprise) onGoEnterprise(email) }}>{t("bf_go_enterprise")}</button>
+                    </div>
+                  </div>
+                )}
+                {emailClass === "whitelist" && (() => {
+                  const wlInfo = getWhitelistInfo(email)
+                  return (
+                    <div className="alert alert-success" style={{ marginBottom:"1.25rem" }}>
+                      <strong>{wlInfo?.company || t("inline_your_org")}</strong> {t("wl_enterprise_profile_banner")}{" "}
+                      {wlInfo?.edition === "all" ? t("lm_wl_edition_all") : t("lm_wl_edition_nl")}.
+                      <div style={{ marginTop:"0.75rem" }}>
+                        <button className="btn-green btn-full" type="button" onClick={() => { if (onGoEnterprise) onGoEnterprise(email, wlInfo) }}>{t("bf_go_enterprise")}</button>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {!emailClass && (
+                  <button className="btn-green btn-full" type="submit">{t("bf_next")}</button>
+                )}
+                {(emailClass === "generic") && (
+                  <button className="btn-green btn-full" type="submit">{t("bf_next")}</button>
+                )}
+              </form>
+            </>
+          )}
+
+          {/* ── STAP 2: Profiel ── */}
+          {step === "profile" && (
+            <>
+              <h2 className="reg-step-title">{t("bf_profile_title")}</h2>
+              <EmailChip email={email} onEdit={() => { setEmailClass(null); setStep("email") }} />
+              <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={e => { e.preventDefault(); setStep(isPaidFlow ? "size_picker" : "segment") }}>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
-                  <div className="input-group"><label className="input-label">{t("pf_firstname")}</label><input className="input-field" type="text" placeholder={t("pf_firstname")} value={firstName} onChange={e => setFirstName(e.target.value)} required /></div>
+                  <div className="input-group"><label className="input-label">{t("pf_firstname")}</label><input className="input-field" type="text" placeholder={t("pf_firstname")} value={firstName} onChange={e => setFirstName(e.target.value)} autoFocus required /></div>
                   <div className="input-group"><label className="input-label">{t("pf_lastname")}</label><input className="input-field" type="text" placeholder={t("pf_lastname")} value={lastName} onChange={e => setLastName(e.target.value)} required /></div>
                 </div>
                 <div className="input-group">
@@ -180,7 +250,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                 </div>
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-green btn-full" onClick={() => setStep("size_picker")}>{t("bf_trial_blocked_cta")}</button>
+                <button className="btn-green btn-full" onClick={() => setStep("profile")}>{t("bf_trial_blocked_cta")}</button>
                 <button className="btn-secondary btn-full" onClick={() => { setIsPaidFlow(false); setStep("email") }}>{t("bf_trial_blocked_other")}</button>
               </div>
             </>
@@ -219,7 +289,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                 </div>
               )}
               <div className="reg-nav-bar" style={{ marginTop:"1rem" }}>
-                <BackButton onClick={() => setStep("trial_blocked")} />
+                <BackButton onClick={() => setStep("profile")} />
                 <button className="btn-green btn-full" onClick={handleSizeNext} disabled={!chosenSize || (chosenSize.id === "XL" && (!xlUserCount || parseInt(xlUserCount) < 16))}>{t("bf_further")}</button>
               </div>
             </>
@@ -239,7 +309,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
                 </div>
               )}
               <div className="reg-nav-bar">
-                <BackButton onClick={() => setStep(isPaidFlow ? "size_picker" : "email")} />
+                <BackButton onClick={() => setStep(isPaidFlow ? "size_picker" : "profile")} />
                 <button className="btn-green btn-full" onClick={handleSegmentNext} disabled={!segment}>{t("bf_next")}</button>
               </div>
             </>
@@ -300,7 +370,7 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin }) {
               <div style={{ border:`1px solid ${C.gray200}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"0.75rem" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.5rem" }}>
                   <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500 }}>1. {t("bf_overview_personal")}</span>
-                  <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("email")}>{t("bf_overview_edit")}</button>
+                  <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("profile")}>{t("bf_overview_edit")}</button>
                 </div>
                 <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, lineHeight:1.6 }}>{firstName} {lastName}<br/>{email}<br/>{jobRole}</div>
               </div>

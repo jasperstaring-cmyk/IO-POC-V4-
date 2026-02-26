@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
-import { classifyEmailForLogin, getCompanyNameFromEmail } from '../utils.js'
+import { classifyEmailForLogin, getCompanyNameFromEmail, getWhitelistInfo } from '../utils.js'
 import IOLogo from '../components/IOLogo.jsx'
 import { EmailChip, LangSwitcher } from '../components/shared.jsx'
 import { GoogleIcon, MicrosoftIcon } from '../components/SsoIcons.jsx'
@@ -36,20 +36,22 @@ function SelectionButton({ icon, label, onClick }) {
 }
 
 /* ═══ Main LoginPage component ═════════════════════════════════════════ */
-export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
+export default function LoginModal({ onClose, onGoRegister, onLoginSuccess, onGoWhitelist }) {
   const { t } = useLang()
   const [step, setStep]         = useState("email")
   const [email, setEmail]       = useState("")
   const [password, setPassword] = useState("")
 
   const companyName = getCompanyNameFromEmail(email)
+  const whitelistInfo = getWhitelistInfo(email)
 
   function handleEmailSubmit(e) {
     e.preventDefault()
     const type = classifyEmailForLogin(email)
-    if (type === "private") { setStep("private_warning"); return }
-    if (type === "sso")     { setStep("sso"); return }
-    if (type === "unknown") { setStep("unknown"); return }
+    if (type === "private")    { setStep("private_warning"); return }
+    if (type === "sso")        { setStep("sso"); return }
+    if (type === "whitelist")  { setStep("whitelist"); return }
+    if (type === "unknown")    { setStep("unknown"); return }
     setStep("password")
   }
 
@@ -123,6 +125,31 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
                 <button className="btn-red btn-full" onClick={() => { onClose(); onGoRegister() }}>{t("lm_unknown_register")}</button>
                 <button className="btn-secondary btn-full" onClick={resetToEmail}>{t("lm_unknown_other")}</button>
+              </div>
+            </>
+          )}
+
+          {/* ── Whitelist: organisation pre-approved for Enterprise ── */}
+          {step === "whitelist" && whitelistInfo && (
+            <>
+              <h1 style={{ fontFamily:"var(--font-serif)", fontSize:"clamp(1.75rem,3.5vw,2.25rem)", fontWeight:700, color:C.navy, lineHeight:"var(--lh-heading)", marginBottom:"1rem" }}>
+                {t("lm_wl_title")}
+              </h1>
+              <EmailChip email={email} onEdit={resetToEmail} />
+              <div className="alert alert-success" style={{ marginBottom:"1.25rem" }}>
+                <strong>{whitelistInfo.company}</strong> {t("lm_wl_body")}{" "}
+                {whitelistInfo.edition === "all" ? t("lm_wl_edition_all") : t("lm_wl_edition_nl")}.
+                <br/><br/>
+                {t("lm_wl_admin")}
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
+                <button className="btn-green btn-full" onClick={() => {
+                  onClose()
+                  if (onGoWhitelist) onGoWhitelist(email, whitelistInfo)
+                }}>
+                  {t("lm_wl_cta")}
+                </button>
+                <button className="btn-secondary btn-full" onClick={resetToEmail}>{t("lm_wl_other")}</button>
               </div>
             </>
           )}

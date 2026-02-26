@@ -18,7 +18,7 @@ import { useLang }        from './LanguageContext.jsx'
 /* Valid view names that can be targeted via hash */
 const VALID_VIEWS = new Set([
   "article","login","choice","plans","bizplans","subscriptions",
-  "personal","business","bizintl","enterprise","onboarding","account",
+  "personal","business","bizintl","enterprise","onboarding","account","invited","whitelistReg","enterpriseReg",
 ])
 
 export default function App() {
@@ -29,6 +29,11 @@ export default function App() {
   const [selectedPlan, setSelectedPlan] = useState(null)
   const [activePlanType, setActivePlanType] = useState("freemium")
   const [userData, setUserData]   = useState({ firstName:"Jasper", lastName:"", email:"", jobRole:"Portfolio Manager", initials:"J" })
+  const [whitelistEmail, setWhitelistEmail] = useState(null)
+  const [whitelistInfo, setWhitelistInfo]   = useState(null)
+  const [invitedEmail, setInvitedEmail]     = useState(null)
+  const [invitedCompany, setInvitedCompany] = useState(null)
+  const [invitedPlanType, setInvitedPlanType] = useState(null)
 
   const { setLang } = useLang()
 
@@ -50,6 +55,12 @@ export default function App() {
 
     // View navigation: #login, #business, etc.
     if (VALID_VIEWS.has(hash)) {
+      // For #invited, set mock invite data
+      if (hash === "invited") {
+        setInvitedEmail("colleague@aegon.com")
+        setInvitedCompany("Aegon")
+        setInvitedPlanType("business")
+      }
       setView(hash)
       // Clear hash after navigating
       history.replaceState(null, "", window.location.pathname)
@@ -85,15 +96,46 @@ export default function App() {
     setView("personal")
   }
 
-  function handleRegComplete(isBusiness) {
+  function handleRegComplete(planTypeOverride) {
     setLoggedIn(true)
     setUserEmail("new@example.com")
-    setActivePlanType(isBusiness ? "business" : selectedPlan || "freemium")
+    const pType = planTypeOverride === true ? "business"
+                : typeof planTypeOverride === "string" ? planTypeOverride
+                : selectedPlan || "freemium"
+    setActivePlanType(pType)
     setUserData({ firstName:"New", lastName:"User", email:"new@example.com", jobRole:"Portfolio Manager", initials:"N" })
     setView("onboarding")
   }
 
   function handleGoLogin() { setModal(null); setView("login") }
+
+  function handleGoWhitelist(email, wlInfo) {
+    setWhitelistEmail(email)
+    setWhitelistInfo(wlInfo)
+    setView("whitelistReg")
+  }
+
+  function handleGoEnterprise(email, wlInfo) {
+    if (wlInfo) {
+      // Whitelist enterprise
+      setWhitelistEmail(email)
+      setWhitelistInfo(wlInfo)
+      setView("whitelistReg")
+    } else {
+      // Domain-based enterprise (e.g. @abnamro.com) — go to personal flow with email pre-filled
+      setWhitelistEmail(email)
+      setWhitelistInfo(null)
+      setSelectedPlan(null)
+      setView("enterpriseReg")
+    }
+  }
+
+  function handleSimulateInvite(email, company, planType) {
+    setInvitedEmail(email)
+    setInvitedCompany(company)
+    setInvitedPlanType(planType || "business")
+    setView("invited")
+  }
 
   return (
     <>
@@ -128,16 +170,37 @@ export default function App() {
         }} onSwitchToPersonal={() => setView("plans")} onBack={() => setView("choice")} />
       )}
       {view === "personal" && (
-        <PersonalFlow selectedPlan={selectedPlan} onComplete={handleRegComplete} onBack={() => setView("plans")} onGoLogin={handleGoLogin} />
+        <PersonalFlow selectedPlan={selectedPlan} onComplete={handleRegComplete} onBack={() => setView("plans")} onGoLogin={handleGoLogin} onGoWhitelist={handleGoWhitelist} />
       )}
       {view === "business" && (
-        <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} onGoLogin={handleGoLogin} />
+        <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} onGoLogin={handleGoLogin} onGoEnterprise={handleGoEnterprise} />
       )}
       {view === "bizintl" && (
-        <BusinessInternationalFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} />
+        <BusinessInternationalFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} onGoEnterprise={handleGoEnterprise} />
       )}
       {view === "enterprise" && (
         <EnterpriseFlow onComplete={() => setView("article")} onBack={() => setView("bizplans")} />
+      )}
+      {view === "whitelistReg" && (
+        <PersonalFlow
+          selectedPlan={null}
+          onComplete={handleRegComplete}
+          onBack={() => { setWhitelistEmail(null); setWhitelistInfo(null); setView("article") }}
+          onGoLogin={handleGoLogin}
+          onGoWhitelist={handleGoWhitelist}
+          whitelistEmail={whitelistEmail}
+          whitelistInfo={whitelistInfo}
+        />
+      )}
+      {view === "enterpriseReg" && (
+        <PersonalFlow
+          selectedPlan={null}
+          onComplete={handleRegComplete}
+          onBack={() => { setWhitelistEmail(null); setView("article") }}
+          onGoLogin={handleGoLogin}
+          onGoWhitelist={handleGoWhitelist}
+          enterpriseEmail={whitelistEmail}
+        />
       )}
       {view === "onboarding" && (
         <OnboardingPage
@@ -146,10 +209,22 @@ export default function App() {
         />
       )}
       {view === "account" && (
-        <AccountPage user={userData} planType={activePlanType} onBack={() => setView("article")} />
+        <AccountPage user={userData} planType={activePlanType} onBack={() => setView("article")} onSimulateInvite={handleSimulateInvite} />
+      )}
+      {view === "invited" && (
+        <PersonalFlow
+          selectedPlan={null}
+          onComplete={() => handleRegComplete(true)}
+          onBack={() => { setInvitedEmail(null); setInvitedCompany(null); setView("article") }}
+          onGoLogin={handleGoLogin}
+          onGoWhitelist={handleGoWhitelist}
+          invitedEmail={invitedEmail}
+          invitedCompany={invitedCompany}
+          invitedPlanType={invitedPlanType}
+        />
       )}
       {view === "login" && (
-        <LoginModal onClose={() => setView("article")} onGoRegister={() => setView("choice")} onLoginSuccess={handleLoginSuccess} />
+        <LoginModal onClose={() => setView("article")} onGoRegister={() => setView("choice")} onLoginSuccess={handleLoginSuccess} onGoWhitelist={handleGoWhitelist} />
       )}
     </>
   )

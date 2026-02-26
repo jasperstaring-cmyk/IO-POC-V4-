@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
 import { JOB_ROLES } from '../data.js'
-import { classifyEmailForReg } from '../utils.js'
+import { classifyEmailForReg, getWhitelistInfo } from '../utils.js'
 import { TopProgressBar, RegSidebar, EmailChip, AuthNav, CheckItem } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
 import IOLogo from '../components/IOLogo.jsx'
@@ -17,23 +17,35 @@ function planMeta(planId, t) {
   return map[planId] || {}
 }
 
-export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLogin }) {
+export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLogin, onGoWhitelist, invitedEmail, invitedCompany, invitedPlanType, whitelistEmail, whitelistInfo, enterpriseEmail }) {
   const { t } = useLang()
-  const [step, setStep]             = useState("email")
-  const [email, setEmail]           = useState("")
+  const isWhitelistEnterprise = !!(whitelistEmail && whitelistInfo)
+  const isEnterpriseRedirect = !!(enterpriseEmail)
+  const [step, setStep]             = useState(invitedEmail ? "profile" : (isWhitelistEnterprise || isEnterpriseRedirect) ? "profile" : "email")
+  const [email, setEmail]           = useState(invitedEmail || whitelistEmail || enterpriseEmail || "")
   const [firstName, setFirstName]   = useState("")
   const [lastName, setLastName]     = useState("")
   const [jobRole, setJobRole]       = useState("")
   const [password, setPassword]     = useState("")
   const [chosenPlan, setChosenPlan] = useState(selectedPlan || "freemium")
   const [privateOverride, setPrivateOverride] = useState(false)
+  const [isEnterprise, setIsEnterprise]   = useState(isWhitelistEnterprise || isEnterpriseRedirect)
+  const [isInvited, setIsInvited]         = useState(!!(invitedEmail && invitedCompany))
 
-  const totalSteps  = chosenPlan === "pro" ? 4 : 3
+  const totalSteps  = isEnterprise || isInvited ? 2 : chosenPlan === "pro" ? 4 : 3
   const STEP_NUM    = { email:1, private_warning:1, generic_block:1, existing:1, enterprise:1, whitelist:1, profile:2, payment:3, confirm:3, done:4 }
   const currentStep = STEP_NUM[step] || 1
 
   // Sidebar plan info
-  const meta = planMeta(chosenPlan, t)
+  const regularMeta = planMeta(chosenPlan, t)
+  const enterpriseName = isWhitelistEnterprise
+    ? (whitelistInfo.edition === "all" ? "Enterprise — All editions" : "Enterprise — NL")
+    : "Enterprise"
+  const meta = isEnterprise
+    ? { name: enterpriseName, price: null, cta: isWhitelistEnterprise ? (t("wl_sidebar_cta_enterprise")) : t("pf_enterprise_profile_banner"), features: t("plan_pro_features") || [] }
+    : isInvited
+    ? { name: invitedPlanType === "bizintl" ? "Business International" : "Business", price: null, cta: t("inv_banner_post"), features: t("plan_pro_features") || [] }
+    : regularMeta
 
   function handleEmailSubmit(e) {
     e.preventDefault()
@@ -48,6 +60,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
 
   function handleProfileSubmit(e) {
     e.preventDefault()
+    if (isEnterprise || isInvited) { setStep("done"); return }
     setStep(chosenPlan === "pro" ? "payment" : "confirm")
   }
 
@@ -56,7 +69,14 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
   // ── Done: designer bevestigingspagina ────────────────────────────────────────
   if (step === "done") {
     const items = t("ob_confirm_items")
-    const titleNl = chosenPlan === "pro" ? t("pf_done_pro") : chosenPlan === "trial" ? t("pf_done_trial") : t("pf_done_free")
+    const doneTitle = isEnterprise ? t("pf_done_enterprise")
+                    : isInvited   ? t("pf_done_invited")
+                    : chosenPlan === "pro" ? t("pf_done_pro") : chosenPlan === "trial" ? t("pf_done_trial") : t("pf_done_free")
+    const doneBody  = isWhitelistEnterprise
+                    ? t("pf_done_body_wl_enterprise").replace("{company}", whitelistInfo?.company || "").replace("{edition}", whitelistInfo?.edition === "all" ? t("lm_wl_edition_all") : t("lm_wl_edition_nl"))
+                    : isEnterprise ? t("pf_done_body_enterprise")
+                    : isInvited   ? t("pf_done_body_invited").replace("{company}", invitedCompany || "")
+                    : chosenPlan === "pro" ? t("pf_done_body_pro") : chosenPlan === "trial" ? t("pf_done_body_trial") : t("pf_done_body_free")
     return (
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", minHeight:"100vh" }}>
         {/* Links */}
@@ -66,10 +86,10 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
           </div>
           <div style={{ marginTop:"2rem" }}>
             <h1 style={{ fontFamily:"var(--font-serif)", fontSize:"clamp(2rem,4vw,3rem)", fontWeight:700, color:C.navy, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", marginBottom:"0.75rem" }}>
-              {titleNl}
+              {doneTitle}
             </h1>
             <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, marginBottom:"2rem", lineHeight:"var(--lh-body)" }}>
-              {chosenPlan === "pro" ? t("pf_done_body_pro") : chosenPlan === "trial" ? t("pf_done_body_trial") : t("pf_done_body_free")}
+              {doneBody}
             </p>
             <div style={{ marginBottom:"2rem" }}>
               <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.875rem" }}>{t("ob_what_now")}</div>
@@ -84,8 +104,8 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
               {t("pf_done_confirm")} <strong>{email}</strong>.
             </p>
             <div style={{ display:"flex", gap:"1rem" }}>
-              <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("ob_to_website")}</button>
-              <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={() => { onComplete(); }}>{t("ob_to_dashboard")}</button>
+              <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={() => onComplete(isEnterprise ? "enterprise" : undefined)}>{t("ob_to_website")}</button>
+              <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={() => onComplete(isEnterprise ? "enterprise" : undefined)}>{t("ob_to_dashboard")}</button>
             </div>
           </div>
         </div>
@@ -175,27 +195,63 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
             <>
               <h2 className="reg-step-title">{t("pf_enterprise_title")}</h2>
               <EmailChip email={email} onEdit={() => setStep("email")} />
-              <div className="alert alert-success">{t("pf_enterprise_body")}</div>
-              <button className="btn-primary btn-full" style={{ marginTop:"1rem" }} onClick={onComplete}>{t("pf_enterprise_access")}</button>
+              <div className="alert alert-success" style={{ marginBottom:"1.25rem" }}>
+                {t("pf_enterprise_body")}
+              </div>
+              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.25rem" }}>
+                {t("pf_enterprise_profile_note")}
+              </p>
+              <button className="btn-green btn-full" onClick={() => { setIsEnterprise(true); setStep("profile") }}>{t("pf_enterprise_profile_cta")}</button>
             </>
           )}
 
-          {/* ── Whitelist ── */}
-          {step === "whitelist" && (
+          {/* ── Whitelist → Enterprise profile ── */}
+          {step === "whitelist" && (() => {
+            const wlInfo = getWhitelistInfo(email)
+            return (
             <>
-              <h2 className="reg-step-title">{t("pf_whitelist_title")}</h2>
+              <h2 className="reg-step-title">{t("pf_wl_redirect_title")}</h2>
               <EmailChip email={email} onEdit={() => setStep("email")} />
-              <div className="alert alert-success">{t("pf_whitelist_body")}</div>
-              <button className="btn-primary btn-full" style={{ marginTop:"1rem" }} onClick={() => setStep("profile")}>{t("pf_whitelist_cta")}</button>
+              <div className="alert alert-success" style={{ marginBottom:"1.25rem" }}>
+                <strong>{wlInfo?.company || t("inline_your_org")}</strong> {t("pf_wl_redirect_body")}{" "}
+                {wlInfo?.edition === "all" ? t("lm_wl_edition_all") : t("lm_wl_edition_nl")}.
+                <br/><br/>
+                {t("pf_wl_redirect_admin")}
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
+                <button className="btn-green btn-full" onClick={() => {
+                  if (onGoWhitelist) onGoWhitelist(email, wlInfo)
+                }}>
+                  {t("pf_enterprise_profile_cta")}
+                </button>
+                <button className="btn-secondary btn-full" onClick={() => setStep("email")}>{t("pf_private_other")}</button>
+              </div>
             </>
-          )}
+            )
+          })()}
 
           {/* ── Profiel ── */}
           {step === "profile" && (
             <>
-              <h2 className="reg-step-title">{t("pf_profile_title")}</h2>
-              <p className="reg-step-sub">{t("pf_profile_sub")}</p>
-              <EmailChip email={email} onEdit={() => setStep("email")} />
+              <h2 className="reg-step-title">{isInvited ? t("inv_profile_title") : t("pf_profile_title")}</h2>
+              <p className="reg-step-sub">{isInvited ? t("inv_profile_sub") : t("pf_profile_sub")}</p>
+
+              {isEnterprise && (
+                <div className="alert alert-success" style={{ marginBottom:"1rem" }}>
+                  {isWhitelistEnterprise
+                    ? <><strong>{whitelistInfo.company}</strong> {t("wl_enterprise_profile_banner")} {whitelistInfo.edition === "all" ? t("lm_wl_edition_all") : t("lm_wl_edition_nl")}. {t("lm_wl_admin")}</>
+                    : t("pf_enterprise_profile_banner")
+                  }
+                </div>
+              )}
+
+              {isInvited && (
+                <div className="alert alert-success" style={{ marginBottom:"1rem" }}>
+                  {t("inv_banner_pre")} <strong>{invitedCompany}</strong>. {t("inv_banner_post")}
+                </div>
+              )}
+
+              <EmailChip email={email} onEdit={isInvited ? undefined : () => setStep("email")} />
               <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={handleProfileSubmit}>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
                   <div className="input-group"><label className="input-label">{t("pf_firstname")}</label><input className="input-field" type="text" placeholder={t("pf_firstname")} value={firstName} onChange={e => setFirstName(e.target.value)} required /></div>
@@ -209,7 +265,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
                   </select>
                 </div>
                 <div className="input-group"><label className="input-label">{t("pf_password")}</label><input className="input-field" type="text" style={{ WebkitTextSecurity:"disc" }} autoComplete="off" data-1p-ignore data-lpignore="true" placeholder={t("pf_password_hint")} value={password} onChange={e => setPassword(e.target.value)} minLength={8} required /></div>
-                <button className="btn-green btn-full" type="submit">{chosenPlan ? t("pf_profile_next") : t("pf_profile_create")}</button>
+                <button className="btn-green btn-full" type="submit">{isEnterprise ? t("pf_enterprise_create") : isInvited ? t("inv_create_profile") : chosenPlan ? t("pf_profile_next") : t("pf_profile_create")}</button>
               </form>
             </>
           )}

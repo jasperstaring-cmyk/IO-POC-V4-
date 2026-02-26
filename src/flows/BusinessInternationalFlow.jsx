@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
 import { SEGMENTS, JOB_ROLES, BUSINESS_INTL_SIZES } from '../data.js'
-import { TopProgressBar, RegSidebar, SelectionRow, BackButton, AuthNav } from '../components/shared.jsx'
+import { TopProgressBar, RegSidebar, SelectionRow, EmailChip, BackButton, AuthNav } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
+import { classifyEmailForReg, getWhitelistInfo, getCompanyNameFromEmail } from '../utils.js'
 import IOLogo from '../components/IOLogo.jsx'
 
 /* ─── 50% discount for Wealth & Institutional ─────────────────────────── */
@@ -30,7 +31,7 @@ function getSidebarMeta(size, segId, xlCount, t, tBizIntl) {
 }
 
 /* ─── Component ────────────────────────────────────────────────────────── */
-export default function BusinessInternationalFlow({ onComplete, onBack }) {
+export default function BusinessInternationalFlow({ onComplete, onBack, onGoEnterprise }) {
   const { t, tSeg, tType, tBizIntl } = useLang()
   const [step, setStep]             = useState("email")
   const [email, setEmail]           = useState("")
@@ -45,9 +46,10 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
   const [company, setCompany]       = useState({ kvk:"", name:"", street:"", number:"", addition:"", zip:"", city:"", country:"NL", vat:"" })
   const [inviteEmails, setInviteEmails] = useState(["",""])
   const [agreed, setAgreed]         = useState(false)
+  const [emailClass, setEmailClass] = useState(null)
 
-  const STEP_NUM = { email:1, segment:2, type:3, size_picker:4, company:5, overview:6, payment:7, invite:8, done:9 }
-  const TOTAL = 9
+  const STEP_NUM    = { email:1, profile:2, segment:3, type:4, size_picker:5, company:6, overview:7, payment:8, invite:9, done:10 }
+  const TOTAL = 10
   const curr  = STEP_NUM[step] || 1
   const selectedSegment = SEGMENTS.find(s => s.id === segment?.id)
   const xlCount = parseInt(xlUserCount) || 16
@@ -103,10 +105,66 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
             <>
               <h2 className="reg-step-title">{t("bi_title")}</h2>
               <p className="reg-step-sub">{t("bi_sub")}</p>
+              <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={e => {
+                e.preventDefault()
+                const cls = classifyEmailForReg(email)
+                setEmailClass(cls)
+                if (cls === "generic" || cls === "private" || cls === "enterprise" || cls === "whitelist" || cls === "existing") return
+                setStep("profile")
+              }}>
+                <div className="input-group"><label className="input-label">{t("bf_email_label")}</label><input className="input-field" type="text" inputMode="email" placeholder={t("bf_email_placeholder")} value={email} onChange={e => { setEmail(e.target.value); setEmailClass(null) }} autoFocus required /></div>
+
+                {emailClass === "generic" && (
+                  <div className="alert alert-warning" style={{ marginBottom:"1.25rem" }}>{t("pf_generic_warn")}</div>
+                )}
+                {emailClass === "private" && (
+                  <div className="alert alert-warning" style={{ marginBottom:"1.25rem" }}>
+                    {t("pf_private_warn")}
+                    <div style={{ marginTop:"0.75rem" }}><button className="btn-green btn-full" type="button" onClick={() => { setEmailClass(null); setStep("profile") }}>{t("pf_private_continue")}</button></div>
+                  </div>
+                )}
+                {emailClass === "existing" && (
+                  <div className="alert alert-warning" style={{ marginBottom:"1.25rem" }}>
+                    {t("pf_existing_warn")}
+                  </div>
+                )}
+                {emailClass === "enterprise" && (
+                  <div className="alert alert-success" style={{ marginBottom:"1.25rem" }}>
+                    {t("pf_enterprise_profile_note")} <strong>{getCompanyNameFromEmail(email) || t("inline_your_org")}</strong>.
+                    {" "}{t("bf_enterprise_redirect_short")}
+                    <div style={{ marginTop:"0.75rem" }}>
+                      <button className="btn-green btn-full" type="button" onClick={() => { if (onGoEnterprise) onGoEnterprise(email) }}>{t("bf_go_enterprise")}</button>
+                    </div>
+                  </div>
+                )}
+                {emailClass === "whitelist" && (() => {
+                  const wlInfo = getWhitelistInfo(email)
+                  return (
+                    <div className="alert alert-success" style={{ marginBottom:"1.25rem" }}>
+                      <strong>{wlInfo?.company || t("inline_your_org")}</strong> {t("wl_enterprise_profile_banner")}{" "}
+                      {wlInfo?.edition === "all" ? t("lm_wl_edition_all") : t("lm_wl_edition_nl")}.
+                      <div style={{ marginTop:"0.75rem" }}>
+                        <button className="btn-green btn-full" type="button" onClick={() => { if (onGoEnterprise) onGoEnterprise(email, wlInfo) }}>{t("bf_go_enterprise")}</button>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {(!emailClass || emailClass === "generic") && (
+                  <button className="btn-green btn-full" type="submit">{t("bf_next")}</button>
+                )}
+              </form>
+            </>
+          )}
+
+          {/* ── Profile ── */}
+          {step === "profile" && (
+            <>
+              <h2 className="reg-step-title">{t("bf_profile_title")}</h2>
+              <EmailChip email={email} onEdit={() => { setEmailClass(null); setStep("email") }} />
               <form autoComplete="off" data-1p-ignore="true" data-lpignore="true" onSubmit={e => { e.preventDefault(); setStep("segment") }}>
-                <div className="input-group"><label className="input-label">{t("bf_email_label")}</label><input className="input-field" type="text" inputMode="email" placeholder={t("bf_email_placeholder")} value={email} onChange={e => setEmail(e.target.value)} autoFocus required /></div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
-                  <div className="input-group"><label className="input-label">{t("pf_firstname")}</label><input className="input-field" type="text" placeholder={t("pf_firstname")} value={firstName} onChange={e => setFirstName(e.target.value)} required /></div>
+                  <div className="input-group"><label className="input-label">{t("pf_firstname")}</label><input className="input-field" type="text" placeholder={t("pf_firstname")} value={firstName} onChange={e => setFirstName(e.target.value)} autoFocus required /></div>
                   <div className="input-group"><label className="input-label">{t("pf_lastname")}</label><input className="input-field" type="text" placeholder={t("pf_lastname")} value={lastName} onChange={e => setLastName(e.target.value)} required /></div>
                 </div>
                 <div className="input-group"><label className="input-label">{t("pf_jobrole")}</label><select className="input-field" value={jobRole} onChange={e => setJobRole(e.target.value)} required><option value="">{t("pf_jobrole_pick")}</option>{JOB_ROLES.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
@@ -133,7 +191,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
               {segment && !hasDiscount(segment.id) && (
                 <div className="alert alert-info" style={{ marginTop:"1rem", fontSize:"0.85rem" }}>{t("bi_no_discount_info")}</div>
               )}
-              <div className="reg-nav-bar"><BackButton onClick={() => setStep("email")} /><button className="btn-green btn-full" onClick={handleSegmentNext} disabled={!segment}>{t("bf_next")}</button></div>
+              <div className="reg-nav-bar"><BackButton onClick={() => setStep("profile")} /><button className="btn-green btn-full" onClick={handleSegmentNext} disabled={!segment}>{t("bf_next")}</button></div>
             </>
           )}
 
@@ -233,7 +291,7 @@ export default function BusinessInternationalFlow({ onComplete, onBack }) {
               <div style={{ border:`1px solid ${C.gray200}`, borderRadius:8, padding:"1.125rem 1.25rem", marginBottom:"0.75rem" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.5rem" }}>
                   <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500 }}>1. {t("bf_overview_personal")}</span>
-                  <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("email")}>{t("bf_overview_edit")}</button>
+                  <button className="link-btn" style={{ fontSize:"0.8rem" }} onClick={() => setStep("profile")}>{t("bf_overview_edit")}</button>
                 </div>
                 <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, lineHeight:1.6 }}>{firstName} {lastName}<br/>{email}<br/>{jobRole}</div>
               </div>
