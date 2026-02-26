@@ -20,7 +20,7 @@ export function EmailChip({ email, onEdit }) {
   return (
     <span style={{ display:"inline-flex", alignItems:"center", gap:"0.5rem", background:C.gray100, borderRadius:99, padding:"0.2rem 0.75rem", fontSize:"0.85rem", color:C.navy, fontWeight:500, marginBottom:"1.25rem" }}>
       {email}
-      <button className="link-btn" style={{ fontSize:"0.75rem" }} onClick={onEdit}>{t("acc_edit")}</button>
+      {onEdit && <button className="link-btn" style={{ fontSize:"0.75rem" }} onClick={onEdit}>{t("acc_edit")}</button>}
     </span>
   )
 }
@@ -80,12 +80,12 @@ export function BackButton({ onClick }) {
 }
 
 // ─── LangSwitcher ─────────────────────────────────────────────────────────────
-const LANG_LABELS = { nl: "Nederlands", en: "English", de: "Deutsch", fr: "Français" }
+const LANG_LABELS = { nl: "Nederlands", en: "English" }
 
 export function LangSwitcher() {
   const { lang, setLang } = useLang()
   const [open, setOpen] = useState(false)
-  const LANGS = ["nl", "en", "de", "fr"]
+  const LANGS = ["nl", "en"]
 
   return (
     <div style={{ position:"relative" }}>
@@ -233,5 +233,23 @@ export function RegSidebar({ planName, planPrice, planPriceSuffix, planFeatures,
         </div>
       </div>
     </>
+  )
+}
+
+// ─── CDP Product Label ────────────────────────────────────────────────────────
+export function CdpProductLabel({ productName, edition }) {
+  const { t } = useLang()
+  if (!productName) return null
+  return (
+    <div style={{
+      display:"inline-flex", alignItems:"center", gap:"0.625rem", flexWrap:"wrap",
+      background:"#F0F0FF", border:"1.5px dashed #7B7BEE", borderRadius:8,
+      padding:"0.625rem 1rem", marginTop:"1.25rem",
+      fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:"#4A4AB5",
+    }}>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="3" stroke="#7B7BEE" strokeWidth="1.5"/><path d="M5 8h6M8 5v6" stroke="#7B7BEE" strokeWidth="1.5" strokeLinecap="round"/></svg>
+      <span><strong>{t("cdp_product_label")}:</strong> {productName}</span>
+      {edition && <span style={{ borderLeft:"1px solid #B3B3EE", paddingLeft:"0.5rem" }}>{t("cdp_edition_label")}: <strong>{edition}</strong></span>}
+    </div>
   )
 }

@@ -267,7 +267,10 @@ function AbonnementenSection({ planType }) {
         <div style={{ width:28, height:20, background:"linear-gradient(180deg,#AE1C28 33%,#fff 33% 66%,#21468B 66%)", borderRadius:3, flexShrink:0, border:`1px solid ${C.gray200}` }}/>
         <div style={{ flex:1 }}>
           <div style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"0.9375rem", color:C.navy }}>
-            Investment Officer · Local Nederland · {isBusiness ? "Business" : "Personal"} {isPro ? "Pro" : isTrial ? "Trial" : "Freemium"}
+            Investment Officer · Nederland · {isBusiness ? "Business" : "Personal"} {isPro ? "Pro" : isTrial ? "Trial" : "Free"}
+          </div>
+          <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.75rem", color:"#4A4AB5", marginTop:"0.25rem" }}>
+            CDP: {isBusiness ? "Business Sell Side — .NL" : isPro ? "Personal Pro — .NL" : isTrial ? "Personal Trial — .NL" : "Personal Free — .NL"}
           </div>
           <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.gray500, marginTop:"0.2rem" }}>{t("acc_sub_started")} 12 jan 2025</div>
         </div>

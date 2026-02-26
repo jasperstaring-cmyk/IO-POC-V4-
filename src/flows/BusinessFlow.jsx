@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { C } from '../tokens.js'
 import { SEGMENTS, JOB_ROLES, BUSINESS_SIZES } from '../data.js'
-import { TopProgressBar, RegSidebar, SelectionRow, EmailChip, BackButton, AuthNav } from '../components/shared.jsx'
+import { TopProgressBar, RegSidebar, SelectionRow, EmailChip, BackButton, AuthNav, CdpProductLabel } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
 import { classifyEmailForReg, getWhitelistInfo, getCompanyNameFromEmail } from '../utils.js'
 import IOLogo from '../components/IOLogo.jsx'
@@ -123,6 +123,16 @@ export default function BusinessFlow({ onComplete, onSkipToSite, onBack, onGoLog
               <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("ob_start_intro")} →</button>
               <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onSkipToSite || onComplete}>{t("ob_go_to_site")}</button>
             </div>
+            <CdpProductLabel
+              productName={
+                isPaidFlow
+                  ? `Business Sell Side Paid ${chosenSize?.label || ""}`
+                  : isFreePermanent(segment?.id)
+                    ? "Business Buy Side"
+                    : "Business Sell Side"
+              }
+              edition="NL"
+            />
           </div>
         </div>
         <div style={{ position:"relative", overflow:"hidden", background:`linear-gradient(135deg,${C.navy},#1B3A5C)` }}>
@@ -261,6 +271,30 @@ export default function BusinessFlow({ onComplete, onSkipToSite, onBack, onGoLog
             <>
               <h2 className="reg-step-title">{t("bf_size_title")}</h2>
               <p className="reg-step-sub">{t("bf_size_sub")}</p>
+
+              {/* Pricing anchor */}
+              <div style={{
+                display:"flex", alignItems:"center", gap:"0.875rem",
+                background:"linear-gradient(135deg, #FFF8F0 0%, #FFF2E6 100%)",
+                border:`1.5px solid #F0C878`, borderRadius:10,
+                padding:"1rem 1.25rem", marginBottom:"1.5rem",
+              }}>
+                <div style={{
+                  width:44, height:44, borderRadius:"50%", flexShrink:0,
+                  background:"#F0C878", display:"flex", alignItems:"center", justifyContent:"center",
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#8B6914"/></svg>
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", fontWeight:700, color:C.navy, marginBottom:"0.2rem" }}>
+                    Personal Pro: <span style={{ color:"#8B6914" }}>{t("bf_size_anchor_price")}</span>
+                  </div>
+                  <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.gray700, lineHeight:"var(--lh-body)" }}>
+                    {t("bf_size_anchor")}
+                  </div>
+                </div>
+              </div>
+
               {BUSINESS_SIZES.map(sz => (
                 <div key={sz.id}>
                   <SelectionRow selected={chosenSize?.id === sz.id} onSelect={() => setChosenSize(sz)}

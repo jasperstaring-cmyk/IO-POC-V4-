@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { C } from '../tokens.js'
 import { JOB_ROLES } from '../data.js'
 import { classifyEmailForReg, getWhitelistInfo } from '../utils.js'
-import { TopProgressBar, RegSidebar, EmailChip, AuthNav, CheckItem } from '../components/shared.jsx'
+import { TopProgressBar, RegSidebar, EmailChip, AuthNav, CheckItem, CdpProductLabel } from '../components/shared.jsx'
 import { useLang } from '../LanguageContext.jsx'
 import IOLogo from '../components/IOLogo.jsx'
 
@@ -107,6 +107,20 @@ export default function PersonalFlow({ selectedPlan, onComplete, onSkipToSite, o
               <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={() => onComplete(isEnterprise ? "enterprise" : undefined)}>{t("ob_start_intro")} →</button>
               <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={() => (onSkipToSite || onComplete)(isEnterprise ? "enterprise" : undefined)}>{t("ob_go_to_site")}</button>
             </div>
+            <CdpProductLabel
+              productName={
+                isEnterprise
+                  ? (isWhitelistEnterprise
+                      ? (whitelistInfo?.edition === "all" ? "Enterprise All" : "Enterprise NL")
+                      : "Enterprise NL")
+                  : isInvited
+                    ? (invitedPlanType === "bizintl" ? "Business International" : "Business Sell Side")
+                    : chosenPlan === "pro" ? "Personal Pro"
+                    : chosenPlan === "trial" ? "Personal Trial"
+                    : "Personal Free"
+              }
+              edition="NL"
+            />
           </div>
         </div>
         {/* Rechts — grote foto */}
@@ -287,7 +301,7 @@ export default function PersonalFlow({ selectedPlan, onComplete, onSkipToSite, o
                 </div>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"1.5rem" }}>
                   <span style={{ fontFamily:"var(--font-sans)", fontSize:"1rem", fontWeight:700, color:C.navy }}>{t("pf_payment_total")}</span>
-                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"1.25rem", fontWeight:700, color:C.navy }}>€ 649,–</span>
+                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"1.25rem", fontWeight:700, color:C.navy }}>€ 648,–</span>
                 </div>
                 <button className="btn-red btn-full" type="submit">{t("pf_payment_cta")}</button>
               </form>

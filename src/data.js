@@ -84,24 +84,24 @@ export const SEGMENTS = [
   },
 ]
 
-// ─── Business plan sizes (per Figma wireframe 153) ─────────────────────────
+// ─── Business plan sizes (Sell Side Paid – 1 editie) ───────────────────────
 export const BUSINESS_SIZES = [
-  { id:"S",  label:"Small Business",       users:"1–5 gebruikers",    priceLabel:"€ 79,–",    monthlyPrice:79,   perUser: null,  desc:"Voor kleine teams die samen willen lezen." },
-  { id:"M",  label:"Medium Business",      users:"6–10 gebruikers",   priceLabel:"€ 104,–",   monthlyPrice:104,  perUser: null,  desc:"Voor middelgrote teams met gedeelde toegang." },
-  { id:"L",  label:"Large Business",       users:"11–16 gebruikers",  priceLabel:"€ 145,–",   monthlyPrice:145,  perUser: null,  desc:"Voor grotere organisaties." },
-  { id:"XL", label:"Extra large Business", users:"Meer dan 16 gebruikers", priceLabel:"Vanaf € 9,– p.m. per gebruiker", monthlyPrice:null, perUser: 9, desc:"Prijs per gebruiker per maand." },
+  { id:"S",  label:"Small Business",       users:"2–5 gebruikers",    priceLabel:"€ 79,–",    monthlyPrice:79,    perUser: null,  desc:"Voor kleine teams die samen willen lezen." },
+  { id:"M",  label:"Medium Business",      users:"6–10 gebruikers",   priceLabel:"€ 149,–",   monthlyPrice:149,   perUser: null,  desc:"Voor middelgrote teams met gedeelde toegang." },
+  { id:"L",  label:"Large Business",       users:"11–15 gebruikers",  priceLabel:"€ 199,–",   monthlyPrice:199,   perUser: null,  desc:"Voor grotere organisaties." },
+  { id:"XL", label:"Extra large Business", users:"16 of meer gebruikers", priceLabel:"Vanaf € 12,50 p.m. per gebruiker", monthlyPrice:null, perUser: 12.50, desc:"Prijs per gebruiker per maand." },
 ]
 
 // Backward compat
 export const PRODUCT_C_VARIANTS = BUSINESS_SIZES
 
-// ─── Business International sizes (Product F – all editions) ─────────────────
-// Prices from dossier; 50% discount for Wealth & Institutional segments
+// ─── Business International sizes (all editions) ─────────────────────────────
+// ~45-50% toeslag op NL-pakketten; 50% discount for Wealth & Institutional segments
 export const BUSINESS_INTL_SIZES = [
-  { id:"S",  label:"Small",        users:"2–5 gebruikers",          yearlyPrice:1138,  perUser:null, minUsers:2,  maxUsers:5  },
-  { id:"M",  label:"Medium",       users:"6–10 gebruikers",         yearlyPrice:1498,  perUser:null, minUsers:6,  maxUsers:10 },
-  { id:"L",  label:"Large",        users:"11–15 gebruikers",        yearlyPrice:2088,  perUser:null, minUsers:11, maxUsers:15 },
-  { id:"XL", label:"Extra Large",  users:"16 of meer gebruikers",   yearlyPrice:null,  perUser:10.80, minUsers:16, maxUsers:null },
+  { id:"S",  label:"Small",        users:"2–5 gebruikers",          yearlyPrice:1428,  perUser:null, minUsers:2,  maxUsers:5  },
+  { id:"M",  label:"Medium",       users:"6–10 gebruikers",         yearlyPrice:2628,  perUser:null, minUsers:6,  maxUsers:10 },
+  { id:"L",  label:"Large",        users:"11–15 gebruikers",        yearlyPrice:3468,  perUser:null, minUsers:11, maxUsers:15 },
+  { id:"XL", label:"Extra Large",  users:"16 of meer gebruikers",   yearlyPrice:null,  perUser:18.50, minUsers:16, maxUsers:null },
 ]
 
 // ─── Personal plans ───────────────────────────────────────────────────────────
@@ -140,7 +140,7 @@ export const PERSONAL_PLANS = [
     id: "pro",
     name: "Pro",
     sub: "Volledige toegang – Nederland",
-    priceLabel: "€ 649,–",
+    priceLabel: "€ 648,–",
     priceSuffix: "Per jaar (excl. btw)",
     cta: "Word Pro lid",
     ctaNote: "Direct onbeperkte toegang na betaling.",

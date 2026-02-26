@@ -157,7 +157,8 @@ function PocGuide({ onClose }) {
             <div style={S.cardBody}>
               Use: <span style={S.email}>new@aegon.com</span> or any new business email address<br/>
               <strong>Registration:</strong> email → profile → plan choice (Free / Pro / Trial) → done<br/>
-              <span style={S.step}>4 steps</span> email → profile → plan → done
+              <span style={S.step}>4 steps</span> email → profile → plan → done<br/>
+              <span style={{ display:"inline-block", marginTop:"0.375rem", background:"#F0F0FF", border:"1px dashed #7B7BEE", borderRadius:4, padding:"0.15rem 0.5rem", fontSize:"0.75rem", color:"#4A4AB5" }}>CDP: Personal Free / Trial / Pro — .NL</span>
             </div>
           </div>
 
@@ -166,7 +167,8 @@ function PocGuide({ onClose }) {
             <div style={S.cardBody}>
               Use: <span style={S.email}>new@aegon.com</span> via "Team / Organisation" → Business NL<br/>
               <strong>Registration:</strong> email → profile → segment → type → company details → overview → invite colleagues → done<br/>
-              <span style={S.step}>8 steps</span>
+              <span style={S.step}>8 steps</span><br/>
+              <span style={{ display:"inline-block", marginTop:"0.375rem", background:"#F0F0FF", border:"1px dashed #7B7BEE", borderRadius:4, padding:"0.15rem 0.5rem", fontSize:"0.75rem", color:"#4A4AB5" }}>CDP: Business Buy Side — .NL (Wealth/Institutional) or Business Sell Side — .NL (other)</span>
             </div>
           </div>
 
@@ -175,7 +177,8 @@ function PocGuide({ onClose }) {
             <div style={S.cardBody}>
               Use: <span style={S.email}>new@aegon.com</span> via "Team / Organisation" → Business International<br/>
               <strong>Registration:</strong> email → profile → segment → type → package choice → company → overview → payment → invite → done<br/>
-              <span style={S.step}>10 steps</span>
+              <span style={S.step}>10 steps</span><br/>
+              <span style={{ display:"inline-block", marginTop:"0.375rem", background:"#F0F0FF", border:"1px dashed #7B7BEE", borderRadius:4, padding:"0.15rem 0.5rem", fontSize:"0.75rem", color:"#4A4AB5" }}>CDP: Business International S/M/L/XL — All editions</span>
             </div>
           </div>
 
@@ -209,7 +212,8 @@ function PocGuide({ onClose }) {
             <div style={S.cardTitle}>🟡 Trial block (Business)</div>
             <div style={S.cardBody}>
               Use: <span style={S.email}>trial@company.com</span> in Business NL flow<br/>
-              Email → 2-year block notification → choice of paid packages S/M/L/XL.
+              Email → 2-year block notification → choice of paid packages S/M/L/XL.<br/>
+              <span style={{ display:"inline-block", marginTop:"0.375rem", background:"#F0F0FF", border:"1px dashed #7B7BEE", borderRadius:4, padding:"0.15rem 0.5rem", fontSize:"0.75rem", color:"#4A4AB5" }}>CDP: Business Sell Side Paid S/M/L/XL — .NL</span>
             </div>
           </div>
 
@@ -229,7 +233,9 @@ function PocGuide({ onClose }) {
           <div style={S.sectionTitle}>3. Pricing logic</div>
           <div style={S.card}>
             <div style={S.cardBody}>
-              <strong>Business NL:</strong> Wealth/Institutional segment → free ongoing access. Other segments → 6-month free trial.<br/>
+              <strong>Business Buy Side:</strong> Wealth/Institutional segment → free 24-month access.<br/>
+              <strong>Business Sell Side:</strong> Other segments → 6-month free trial.<br/>
+              <strong>Business Sell Side Paid:</strong> After trial block → paid packages S/M/L/XL.<br/>
               <strong>Business International:</strong> Wealth/Institutional → 50% discount on all packages. Other segments → standard rate.<br/>
               <strong>Enterprise:</strong> Always free. Edition(s) determined by back-end configuration.
             </div>
@@ -264,8 +270,118 @@ function PocGuide({ onClose }) {
 
           <hr style={S.divider} />
 
-          {/* ── 6. Account management ── */}
-          <div style={S.sectionTitle}>6. Account management</div>
+          {/* ── 6. CDP Product matrix ── */}
+          <div style={S.sectionTitle}>6. CDP Product matrix (58 products)</div>
+          <div style={S.card}>
+            <div style={S.cardBody}>
+              Each registration results in a specific CDP product. The edition is determined by the website domain (.nl, .be, .lu, .de, .fr, .com). Below is the complete product catalogue.
+            </div>
+          </div>
+
+          {/* Personal products */}
+          <div style={{ ...S.cardTitle, marginTop:"0.75rem", marginBottom:"0.375rem", fontSize:"0.8rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.gray500 }}>Personal — 18 products (3 × 6 editions)</div>
+          <div style={{ overflowX:"auto" }}>
+            <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-sans)", fontSize:"0.8rem", marginBottom:"1rem" }}>
+              <thead>
+                <tr style={{ background:C.gray50 }}>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Product</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Pricing</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Editions</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Users</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Personal Free", "Free", "NL, BE, LU, DE, FR, COM", "1"],
+                  ["Personal Trial", "10 days free", "NL, BE, LU, DE, FR, COM", "1"],
+                  ["Personal Pro", "€648/yr (€54/mo)", "NL, BE, LU, DE, FR, COM", "1"],
+                ].map(([name, price, eds, users], i) => (
+                  <tr key={i} style={{ borderBottom:`1px solid ${C.gray100}` }}>
+                    <td style={{ padding:"0.4rem 0.625rem", fontWeight:600, color:C.navy }}>{name}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray700 }}>{price}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray500, fontSize:"0.75rem" }}>{eds}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray500 }}>{users}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Business NL products */}
+          <div style={{ ...S.cardTitle, marginTop:"0.5rem", marginBottom:"0.375rem", fontSize:"0.8rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.gray500 }}>Business NL — 36 products (6 × 6 editions)</div>
+          <div style={{ overflowX:"auto" }}>
+            <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-sans)", fontSize:"0.8rem", marginBottom:"1rem" }}>
+              <thead>
+                <tr style={{ background:C.gray50 }}>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Product</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Segment</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Pricing</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Editions</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Users</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Business Buy Side", "Wealth / Institutional", "Free 24 months", "× 6 editions", "Unlimited"],
+                  ["Business Sell Side", "Other segments", "Free 6 months trial", "× 6 editions", "Unlimited"],
+                  ["Business Sell Side Paid S", "After trial block", "€79/mo (€948/yr)", "× 6 editions", "2–5"],
+                  ["Business Sell Side Paid M", "After trial block", "€149/mo (€1,788/yr)", "× 6 editions", "6–10"],
+                  ["Business Sell Side Paid L", "After trial block", "€199/mo (€2,388/yr)", "× 6 editions", "11–15"],
+                  ["Business Sell Side Paid XL", "After trial block", "From €12.50/mo per user", "× 6 editions", "16+"],
+                ].map(([name, seg, price, eds, users], i) => (
+                  <tr key={i} style={{ borderBottom:`1px solid ${C.gray100}` }}>
+                    <td style={{ padding:"0.4rem 0.625rem", fontWeight:600, color:C.navy }}>{name}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray700, fontSize:"0.75rem" }}>{seg}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray700 }}>{price}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray500, fontSize:"0.75rem" }}>{eds}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray500 }}>{users}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Business International products */}
+          <div style={{ ...S.cardTitle, marginTop:"0.5rem", marginBottom:"0.375rem", fontSize:"0.8rem", letterSpacing:"0.06em", textTransform:"uppercase", color:C.gray500 }}>Business International — 4 products (all editions included)</div>
+          <div style={{ overflowX:"auto" }}>
+            <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--font-sans)", fontSize:"0.8rem", marginBottom:"1rem" }}>
+              <thead>
+                <tr style={{ background:C.gray50 }}>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Product</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Pricing</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Editions</th>
+                  <th style={{ textAlign:"left", padding:"0.5rem 0.625rem", borderBottom:`1px solid ${C.gray200}`, fontWeight:700, color:C.navy }}>Users</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Business International S", "€119/mo (€1,428/yr)", "All (NL,BE,LU,DE,FR,COM)", "2–5"],
+                  ["Business International M", "€219/mo (€2,628/yr)", "All", "6–10"],
+                  ["Business International L", "€289/mo (€3,468/yr)", "All", "11–15"],
+                  ["Business International XL", "From €18.50/mo per user", "All", "16+"],
+                ].map(([name, price, eds, users], i) => (
+                  <tr key={i} style={{ borderBottom:`1px solid ${C.gray100}` }}>
+                    <td style={{ padding:"0.4rem 0.625rem", fontWeight:600, color:C.navy }}>{name}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray700 }}>{price}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray500, fontSize:"0.75rem" }}>{eds}</td>
+                    <td style={{ padding:"0.4rem 0.625rem", color:C.gray500 }}>{users}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardBody}>
+              <strong>Note:</strong> Enterprise products are not self-service and are managed by Investment Officer via whitelist/domain configuration. They do not appear as CDP products.<br/><br/>
+              <strong>Total: 58 products</strong> = 18 Personal (3×6) + 36 Business NL (6×6) + 4 Business International
+            </div>
+          </div>
+
+          <hr style={S.divider} />
+
+          {/* ── 7. Account management ── */}
+          <div style={S.sectionTitle}>7. Account management</div>
           <div style={S.card}>
             <div style={S.cardBody}>
               After login or registration, click the avatar (top right) → "My account" to access:<br/>
