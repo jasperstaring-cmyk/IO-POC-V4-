@@ -19,14 +19,20 @@ function formatPrice(n) { return n.toLocaleString("nl-NL", { minimumFractionDigi
 
 function getSidebarMeta(size, segId, xlCount, t, tBizIntl) {
   const features = t("bi_sidebar_features")
-  if (!size) return { name:"Business International", price:"€ 99,–+", priceSuffix: t("bf_size_per_month"), cta:null, features }
+  const PERSONAL_INTL_YEARLY = 948
+  if (!size) return { name:"Business International", price:null, priceSuffix: t("bi_sidebar_select"), cta:null, features, savings:0 }
   const mo = monthlyPrice(size, segId, xlCount)
+  const maxU = size.id === "S" ? 5 : size.id === "M" ? 10 : size.id === "L" ? 15 : (xlCount || 16)
+  const yearlyTeam = maxU * PERSONAL_INTL_YEARLY
+  const yearlyPlan = mo * 12
+  const savings = Math.round(yearlyTeam - yearlyPlan)
   return {
     name: `Business International ${size.label}`,
     price: `€ ${formatPrice(mo)},–`,
     priceSuffix: t("bf_size_per_month") + ", " + t("inline_billed_annually"),
     cta: hasDiscount(segId) ? t("bi_sidebar_discount_cta") : null,
     features: [...features, `${tBizIntl(size.id, "users")}`],
+    savings,
   }
 }
 
@@ -247,13 +253,22 @@ export default function BusinessInternationalFlow({ onComplete, onSkipToSite, on
                 </div>
               )}
               {BUSINESS_INTL_SIZES.map(sz => {
+                const PERSONAL_INTL_MONTHLY = 79
                 const szYr = yearlyPrice(sz, segment?.id, xlCount)
                 const szBaseYr = sz.id === "XL" ? xlCount * sz.perUser * 12 : sz.yearlyPrice
+                const maxU = sz.id === "S" ? 5 : sz.id === "M" ? 10 : sz.id === "L" ? 15 : (parseInt(xlUserCount) || 16)
+                const teamCost = maxU * PERSONAL_INTL_MONTHLY
+                const planMonthly = monthlyPrice(sz, segment?.id, xlCount)
+                const savePct = planMonthly > 0 ? Math.round((1 - planMonthly / teamCost) * 100) : 0
+                const saveBadge = savePct > 0 ? `${t("inline_save")} ${savePct}%` : null
+                const ppMonthly = planMonthly / maxU
+                const ppLabel = `€ ${formatPrice(ppMonthly)},– ${t("inline_per_person")}`
                 return (
                   <div key={sz.id}>
                     <SelectionRow selected={chosenSize?.id === sz.id} onSelect={() => setChosenSize(sz)}
                       name={`${sz.label} — ${tBizIntl(sz.id, "users")}`}
-                      desc={sz.id === "XL" ? t("bi_per_user") : `€ ${formatPrice(szYr)},– ${t("bi_yearly_excl")}`}
+                      desc={<><span>{sz.id === "XL" ? t("bi_per_user") : `€ ${formatPrice(szYr)},– ${t("bi_yearly_excl")}`}</span><br/><span style={{ color:C.gray500, fontSize:"0.8rem" }}>{ppLabel}</span></>}
+                      badge={saveBadge}
                       right={<span style={{ textAlign:"right" }}>
                         {showDiscount && <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.75rem", color:C.gray500, textDecoration:"line-through", display:"block" }}>€ {formatPrice(szBaseYr)},–</span>}
                         <span style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1rem", color:C.navy }}>
@@ -413,7 +428,7 @@ export default function BusinessInternationalFlow({ onComplete, onSkipToSite, on
 
         </div>
         <div className="reg-sidebar">
-          <RegSidebar planName={sidebar.name} planPrice={sidebar.price} planPriceSuffix={sidebar.priceSuffix} planFeatures={sidebar.features} planCta={sidebar.cta} />
+          <RegSidebar planName={sidebar.name} planPrice={sidebar.price} planPriceSuffix={sidebar.priceSuffix} planFeatures={sidebar.features} planCta={sidebar.cta} savingsPerYear={sidebar.savings || 0} />
         </div>
       </div>
     </div>

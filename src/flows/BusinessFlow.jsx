@@ -12,9 +12,17 @@ function isFreePermanent(segId) { return FREE_SEGMENTS.includes(segId) }
 
 function getSidebarMeta(segId, isPaid, chosenSize, xlCount, t, tBiz) {
   const features = t("bf_sidebar_features")
+  const PERSONAL_PRO_YEARLY = 648
   if (isPaid && chosenSize) {
+    const monthlyTotal = chosenSize.id === "XL"
+      ? (xlCount || 16) * (chosenSize.perUser || 12.50)
+      : chosenSize.monthlyPrice
+    const maxU = chosenSize.id === "S" ? 5 : chosenSize.id === "M" ? 10 : chosenSize.id === "L" ? 15 : (xlCount || 16)
+    const yearlyTeam = maxU * PERSONAL_PRO_YEARLY
+    const yearlyPlan = monthlyTotal * 12
+    const savings = Math.round(yearlyTeam - yearlyPlan)
     const price = chosenSize.id === "XL"
-      ? `€ ${((xlCount || 16) * (chosenSize.perUser || 9)).toLocaleString("nl-NL")},–`
+      ? `€ ${((xlCount || 16) * (chosenSize.perUser || 12.50)).toLocaleString("nl-NL")},–`
       : chosenSize.priceLabel
     return {
       name: `Business ${chosenSize.label}`,
@@ -22,15 +30,16 @@ function getSidebarMeta(segId, isPaid, chosenSize, xlCount, t, tBiz) {
       priceSuffix: t("bf_size_per_month") + ", " + t("inline_billed_annually"),
       cta: null,
       features: [...features, `${tBiz(chosenSize.id, "users")}`],
+      savings,
     }
   }
   if (isPaid) {
-    return { name:"Business", price: t("inline_paid"), priceSuffix: t("bf_sidebar_paid_suffix"), cta:null, features }
+    return { name:"Business", price: null, priceSuffix: t("bi_sidebar_select"), cta:null, features, savings:0 }
   }
   if (isFreePermanent(segId)) {
-    return { name:"Business", price: t("inline_free"), priceSuffix: t("bf_sidebar_free_perm_suffix"), cta: t("bf_sidebar_free_permanent"), features }
+    return { name:"Business", price: t("inline_free"), priceSuffix: t("bf_sidebar_free_perm_suffix"), cta: t("bf_sidebar_free_permanent"), features, savings:0 }
   }
-  return { name:"Business", price: t("inline_free"), priceSuffix: t("bf_sidebar_free_trial_suffix"), cta: t("bf_sidebar_free_trial"), features }
+  return { name:"Business", price: t("inline_free"), priceSuffix: t("bf_sidebar_free_trial_suffix"), cta: t("bf_sidebar_free_trial"), features, savings:0 }
 }
 
 /* ─── 2-year trial check (demo): e-mails starting with "trial@" ────── */
@@ -295,10 +304,23 @@ export default function BusinessFlow({ onComplete, onSkipToSite, onBack, onGoLog
                 </div>
               </div>
 
-              {BUSINESS_SIZES.map(sz => (
+              {BUSINESS_SIZES.map(sz => {
+                const PERSONAL_PRO_MONTHLY = 54
+                const maxU = sz.id === "S" ? 5 : sz.id === "M" ? 10 : sz.id === "L" ? 15 : (parseInt(xlUserCount) || 16)
+                const teamCost = maxU * PERSONAL_PRO_MONTHLY
+                const planCost = sz.id === "XL" ? maxU * (sz.perUser || 12.50) : sz.monthlyPrice
+                const savePct = Math.round((1 - planCost / teamCost) * 100)
+                const saveBadge = savePct > 0 ? `${t("inline_save")} ${savePct}%` : null
+                const ppPrice = sz.id === "XL"
+                  ? (sz.perUser || 12.50)
+                  : Math.round((sz.monthlyPrice / maxU) * 100) / 100
+                const ppLabel = `€ ${ppPrice.toLocaleString("nl-NL", {minimumFractionDigits: ppPrice % 1 ? 2 : 0})},– ${t("inline_per_person")}`
+                return (
                 <div key={sz.id}>
                   <SelectionRow selected={chosenSize?.id === sz.id} onSelect={() => setChosenSize(sz)}
-                    name={`${sz.label} — ${tBiz(sz.id, "users")}`} desc={tBiz(sz.id, "desc")}
+                    name={`${sz.label} — ${tBiz(sz.id, "users")}`}
+                    desc={<><span>{`€ ${(sz.monthlyPrice ? sz.monthlyPrice * 12 : (maxU * (sz.perUser || 12.50) * 12)).toLocaleString("nl-NL")},– ${t("bf_size_per_year")} (${t("inline_excl_vat")})`}</span><br/><span style={{ color:C.gray500, fontSize:"0.8rem" }}>{ppLabel}</span></>}
+                    badge={saveBadge}
                     right={sz.id === "XL" ? (xlUserCount ? `€ ${(xlPrice).toLocaleString("nl-NL")},– /${t("inline_mo")}` : (t("biz_XL_price_label"))) : `${sz.priceLabel} /${t("inline_mo")}`} />
                   {sz.id === "XL" && chosenSize?.id === "XL" && (
                     <div style={{ margin:"-0.25rem 0 0.75rem 2.75rem", padding:"1rem", background:C.gray50, borderRadius:6, border:`1px solid ${C.gray200}` }}>
@@ -313,7 +335,7 @@ export default function BusinessFlow({ onComplete, onSkipToSite, onBack, onGoLog
                     </div>
                   )}
                 </div>
-              ))}
+              )})}
               {chosenSize && chosenSize.id !== "XL" && (
                 <div style={{ background:C.gray50, borderRadius:6, border:`1px solid ${C.gray200}`, padding:"1rem 1.25rem", marginTop:"0.5rem", marginBottom:"0.5rem" }}>
                   <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy }}>
@@ -337,9 +359,37 @@ export default function BusinessFlow({ onComplete, onSkipToSite, onBack, onGoLog
               {SEGMENTS.map(s => (
                 <SelectionRow key={s.id} selected={segment?.id === s.id} onSelect={() => setSegment(s)} name={tSeg(s.id, "name")} desc={tSeg(s.id, "desc")} />
               ))}
-              {segment && !isPaidFlow && (
+              {segment && !isPaidFlow && isFreePermanent(segment.id) && (
+                <div style={{
+                  marginTop:"1rem", borderRadius:10, overflow:"hidden",
+                  border:`1.5px solid ${C.green}`, background:"rgba(78,213,150,0.06)",
+                }}>
+                  <div style={{ padding:"1rem 1.25rem" }}>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.green, marginBottom:"0.75rem" }}>
+                      {t("bf_segment_value_label")}
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:"1.25rem", marginBottom:"0.75rem" }}>
+                      <div style={{ textAlign:"center" }}>
+                        <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", color:C.gray500, marginBottom:"0.2rem" }}>{t("bf_segment_value_normal")}</div>
+                        <div style={{ fontFamily:"var(--font-sans)", fontSize:"1.25rem", fontWeight:800, color:C.gray500, textDecoration:"line-through" }}>€ 54,–</div>
+                        <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", color:C.gray500 }}>{t("bf_segment_value_pp")}</div>
+                      </div>
+                      <div style={{ fontSize:"1.5rem", color:C.green }}>→</div>
+                      <div style={{ textAlign:"center" }}>
+                        <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", color:C.green, fontWeight:700, marginBottom:"0.2rem" }}>{t("bf_segment_value_your")}</div>
+                        <div style={{ fontFamily:"var(--font-sans)", fontSize:"1.5rem", fontWeight:800, color:C.green }}>{t("bf_segment_value_free")}</div>
+                        <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", color:C.green, fontWeight:600 }}>{t("bf_segment_value_pp")}</div>
+                      </div>
+                    </div>
+                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.gray700, lineHeight:"var(--lh-body)" }}>
+                      {t("bf_segment_value_body")}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {segment && !isPaidFlow && !isFreePermanent(segment.id) && (
                 <div className="alert alert-info" style={{ marginTop:"1rem", fontSize:"0.85rem" }}>
-                  {t("bf_segment_orgs_in")} {tSeg(segment.id, "name")} {isFreePermanent(segment.id) ? t("bf_segment_free_perm") : t("bf_segment_free_trial")}
+                  {t("bf_segment_orgs_in")} {tSeg(segment.id, "name")} {t("bf_segment_free_trial")}
                 </div>
               )}
               <div className="reg-nav-bar">
@@ -539,7 +589,7 @@ export default function BusinessFlow({ onComplete, onSkipToSite, onBack, onGoLog
 
         </div>
         <div className="reg-sidebar">
-          <RegSidebar planName={sidebar.name} planPrice={sidebar.price} planPriceSuffix={sidebar.priceSuffix} planFeatures={sidebar.features} planCta={sidebar.cta} />
+          <RegSidebar planName={sidebar.name} planPrice={sidebar.price} planPriceSuffix={sidebar.priceSuffix} planFeatures={sidebar.features} planCta={sidebar.cta} savingsPerYear={sidebar.savings || 0} />
         </div>
       </div>
     </div>

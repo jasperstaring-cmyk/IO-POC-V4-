@@ -37,7 +37,7 @@ export function ProgressBar({ total, current }) {
 }
 
 // ─── SelectionRow ─────────────────────────────────────────────────────────────
-export function SelectionRow({ selected, onSelect, name, desc, right }) {
+export function SelectionRow({ selected, onSelect, name, desc, right, badge }) {
   return (
     <button className={`sel-row${selected ? " selected" : ""}`} onClick={onSelect}>
       <div className={`sel-dot${selected ? " checked" : ""}`}>
@@ -50,7 +50,10 @@ export function SelectionRow({ selected, onSelect, name, desc, right }) {
       <div className="sel-row-body" style={{ flex:1 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
           <div className="sel-row-name">{name}</div>
-          {right && <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1rem", color:C.navy, marginLeft:"1rem", whiteSpace:"nowrap" }}>{right}</div>}
+          <div style={{ display:"flex", alignItems:"baseline", gap:"0.625rem", marginLeft:"1rem" }}>
+            {badge && <span style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"0.75rem", color:C.green, background:"rgba(78,213,150,0.12)", border:`1px solid ${C.green}`, borderRadius:4, padding:"0.15rem 0.5rem", whiteSpace:"nowrap" }}>{badge}</span>}
+            {right && <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1rem", color:C.navy, whiteSpace:"nowrap" }}>{right}</div>}
+          </div>
         </div>
         {desc && <div className="sel-row-desc">{desc}</div>}
       </div>
@@ -131,7 +134,7 @@ export function AuthNav({ onBack }) {
 }
 
 // ─── RegSidebar ───────────────────────────────────────────────────────────────
-export function RegSidebar({ planName, planPrice, planPriceSuffix, planFeatures, planCta }) {
+export function RegSidebar({ planName, planPrice, planPriceSuffix, planFeatures, planCta, savingsPerYear }) {
   const { t } = useLang()
   const usps = t("sidebar_usps")
   const showPlan = planName && planName.length > 0
@@ -219,6 +222,23 @@ export function RegSidebar({ planName, planPrice, planPriceSuffix, planFeatures,
           </div>
         ))}
       </div>
+
+      {/* Savings block */}
+      {savingsPerYear > 0 && (
+        <div className="reg-sidebar-card" style={{ background:"rgba(78,213,150,0.08)", border:`1.5px solid ${C.green}` }}>
+          <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.65rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.green, marginBottom:"0.5rem" }}>
+            {t("sidebar_savings_label")}
+          </div>
+          <div style={{ display:"flex", alignItems:"baseline", gap:"0.375rem" }}>
+            <span style={{ fontFamily:"var(--font-sans)", fontSize:"1.5rem", fontWeight:800, color:C.green, lineHeight:1 }}>
+              € {savingsPerYear.toLocaleString("nl-NL")},–
+            </span>
+            <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.8rem", color:C.gray700 }}>
+              {t("sidebar_savings_suffix")}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Kom je er niet uit */}
       <div className="reg-sidebar-card" style={{ background:C.gray50 }}>
