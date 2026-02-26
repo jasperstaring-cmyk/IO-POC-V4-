@@ -83,6 +83,11 @@ export default function App() {
     const name = email.split("@")[0]
     const cap  = name.charAt(0).toUpperCase() + name.slice(1)
     setUserData({ firstName:cap, lastName:"", email, jobRole:"Portfolio Manager", initials:cap[0] })
+    // Set plan type based on email domain for demo purposes
+    const domain = email.toLowerCase().split("@")[1]
+    if (domain === "abnamro.com") setActivePlanType("enterprise")
+    else if (domain === "aegon.com") setActivePlanType("business")
+    else setActivePlanType("freemium")
   }
 
   function handleLogout() {
@@ -108,6 +113,11 @@ export default function App() {
   }
 
   function handleGoLogin() { setModal(null); setView("login") }
+
+  function handleSkipToSite() {
+    setLoggedIn(true)
+    setView("article")
+  }
 
   function handleGoWhitelist(email, wlInfo) {
     setWhitelistEmail(email)
@@ -170,13 +180,13 @@ export default function App() {
         }} onSwitchToPersonal={() => setView("plans")} onBack={() => setView("choice")} />
       )}
       {view === "personal" && (
-        <PersonalFlow selectedPlan={selectedPlan} onComplete={handleRegComplete} onBack={() => setView("plans")} onGoLogin={handleGoLogin} onGoWhitelist={handleGoWhitelist} />
+        <PersonalFlow selectedPlan={selectedPlan} onComplete={handleRegComplete} onSkipToSite={handleSkipToSite} onBack={() => setView("plans")} onGoLogin={handleGoLogin} onGoWhitelist={handleGoWhitelist} />
       )}
       {view === "business" && (
-        <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} onGoLogin={handleGoLogin} onGoEnterprise={handleGoEnterprise} />
+        <BusinessFlow onComplete={() => handleRegComplete(true)} onSkipToSite={handleSkipToSite} onBack={() => setView("bizplans")} onGoLogin={handleGoLogin} onGoEnterprise={handleGoEnterprise} />
       )}
       {view === "bizintl" && (
-        <BusinessInternationalFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("bizplans")} onGoEnterprise={handleGoEnterprise} />
+        <BusinessInternationalFlow onComplete={() => handleRegComplete(true)} onSkipToSite={handleSkipToSite} onBack={() => setView("bizplans")} onGoEnterprise={handleGoEnterprise} />
       )}
       {view === "enterprise" && (
         <EnterpriseFlow onComplete={() => setView("article")} onBack={() => setView("bizplans")} />
@@ -185,6 +195,7 @@ export default function App() {
         <PersonalFlow
           selectedPlan={null}
           onComplete={handleRegComplete}
+          onSkipToSite={handleSkipToSite}
           onBack={() => { setWhitelistEmail(null); setWhitelistInfo(null); setView("article") }}
           onGoLogin={handleGoLogin}
           onGoWhitelist={handleGoWhitelist}
@@ -196,6 +207,7 @@ export default function App() {
         <PersonalFlow
           selectedPlan={null}
           onComplete={handleRegComplete}
+          onSkipToSite={handleSkipToSite}
           onBack={() => { setWhitelistEmail(null); setView("article") }}
           onGoLogin={handleGoLogin}
           onGoWhitelist={handleGoWhitelist}

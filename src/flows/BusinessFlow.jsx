@@ -37,7 +37,7 @@ function getSidebarMeta(segId, isPaid, chosenSize, xlCount, t, tBiz) {
 function hadRecentTrial(email) { return email.toLowerCase().startsWith("trial@") }
 
 /* ─── Component ────────────────────────────────────────────────────────── */
-export default function BusinessFlow({ onComplete, onBack, onGoLogin, onGoEnterprise }) {
+export default function BusinessFlow({ onComplete, onSkipToSite, onBack, onGoLogin, onGoEnterprise }) {
   const { t, tSeg, tType, tBiz } = useLang()
   const [step, setStep]             = useState("email")
   const [email, setEmail]           = useState("")
@@ -120,8 +120,8 @@ export default function BusinessFlow({ onComplete, onBack, onGoLogin, onGoEnterp
               {t("inline_confirm_email_at")} <strong>{email}</strong>.
             </p>
             <div style={{ display:"flex", gap:"1rem" }}>
-              <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("bf_done_to_website")}</button>
-              <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("bf_done_to_dashboard")}</button>
+              <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("ob_start_intro")} →</button>
+              <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onSkipToSite || onComplete}>{t("ob_go_to_site")}</button>
             </div>
           </div>
         </div>

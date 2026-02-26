@@ -320,6 +320,8 @@ export const translations = {
     ob_what_now:        "WAT JE NU KUNT",
     ob_confirm_email:   "Je ontvangt een bevestiging en factuur per e-mail.",
     ob_to_website:      "Naar de website",
+    ob_start_intro:     "Start introductie",
+    ob_go_to_site:      "Ga direct naar de website",
     ob_to_dashboard:    "Ga naar je dashboard",
     ob_confirm_items: [
       "Papers van marktpartijen",
@@ -334,6 +336,8 @@ export const translations = {
     ob_app_store:       "Beschikbaar in de",
     ob_next:            "Volgende",
     ob_skip:            "Overslaan",
+    ob_prev:            "Vorige",
+    ob_skip_to_site:    "Ga naar Investment Officer",
 
     ob_nl_title:        "Jouw nieuwsbrieven zijn ingesteld",
     ob_nl_sub:          "We hebben de volgende nieuwsbrieven voor je geactiveerd. Je kunt deze altijd aanpassen in je accountinstellingen.",
@@ -1138,6 +1142,8 @@ export const translations = {
     ob_what_now:        "WHAT YOU CAN DO NOW",
     ob_confirm_email:   "You will receive a confirmation and invoice by email.",
     ob_to_website:      "Go to the website",
+    ob_start_intro:     "Start introduction",
+    ob_go_to_site:      "Go directly to the website",
     ob_to_dashboard:    "Go to your dashboard",
     ob_confirm_items: [
       "Market party white papers",
@@ -1152,6 +1158,8 @@ export const translations = {
     ob_app_store:       "Available on the",
     ob_next:            "Next",
     ob_skip:            "Skip",
+    ob_prev:            "Previous",
+    ob_skip_to_site:    "Go to Investment Officer",
 
     ob_nl_title:        "Your newsletters have been set up",
     ob_nl_sub:          "We have activated the following newsletters for you. You can always adjust these in your account settings.",
@@ -1944,6 +1952,8 @@ export const translations = {
     ob_what_now:        "WAS SIE JETZT TUN KÖNNEN",
     ob_confirm_email:   "Sie erhalten eine Bestätigung und Rechnung per E-Mail.",
     ob_to_website:      "Zur Website",
+    ob_start_intro:     "Einführung starten",
+    ob_go_to_site:      "Direkt zur Website",
     ob_to_dashboard:    "Zu Ihrem Dashboard",
     ob_confirm_items: [
       "Research-Papers von Marktakteuren",
@@ -1958,6 +1968,8 @@ export const translations = {
     ob_app_store:       "Verfügbar im",
     ob_next:            "Weiter",
     ob_skip:            "Überspringen",
+    ob_prev:            "Zurück",
+    ob_skip_to_site:    "Zu Investment Officer",
 
     ob_nl_title:        "Ihre Newsletter wurden eingerichtet",
     ob_nl_sub:          "Wir haben die folgenden Newsletter für Sie aktiviert. Sie können diese jederzeit in Ihren Kontoeinstellungen anpassen.",
@@ -2751,6 +2763,8 @@ export const translations = {
     ob_what_now:        "CE QUE VOUS POUVEZ FAIRE MAINTENANT",
     ob_confirm_email:   "Vous recevrez une confirmation et une facture par e-mail.",
     ob_to_website:      "Aller au site web",
+    ob_start_intro:     "Commencer l'introduction",
+    ob_go_to_site:      "Aller directement au site",
     ob_to_dashboard:    "Aller à votre tableau de bord",
     ob_confirm_items: [
       "Papers des acteurs du marché",
@@ -2765,6 +2779,8 @@ export const translations = {
     ob_app_store:       "Disponible sur",
     ob_next:            "Suivant",
     ob_skip:            "Passer",
+    ob_prev:            "Précédent",
+    ob_skip_to_site:    "Aller à Investment Officer",
 
     ob_nl_title:        "Vos newsletters ont été configurées",
     ob_nl_sub:          "Nous avons activé les newsletters suivantes pour vous. Vous pouvez les modifier à tout moment dans les paramètres de votre compte.",

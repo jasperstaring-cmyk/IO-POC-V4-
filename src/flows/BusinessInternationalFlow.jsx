@@ -31,7 +31,7 @@ function getSidebarMeta(size, segId, xlCount, t, tBizIntl) {
 }
 
 /* ─── Component ────────────────────────────────────────────────────────── */
-export default function BusinessInternationalFlow({ onComplete, onBack, onGoEnterprise }) {
+export default function BusinessInternationalFlow({ onComplete, onSkipToSite, onBack, onGoEnterprise }) {
   const { t, tSeg, tType, tBizIntl } = useLang()
   const [step, setStep]             = useState("email")
   const [email, setEmail]           = useState("")
@@ -81,8 +81,8 @@ export default function BusinessInternationalFlow({ onComplete, onBack, onGoEnte
               {t("inline_confirm_email_at")} <strong>{email}</strong>.
             </p>
             <div style={{ display:"flex", gap:"1rem" }}>
-              <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("bf_done_to_website")}</button>
-              <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("bf_done_to_dashboard")}</button>
+              <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("ob_start_intro")} →</button>
+              <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onSkipToSite || onComplete}>{t("ob_go_to_site")}</button>
             </div>
           </div>
         </div>

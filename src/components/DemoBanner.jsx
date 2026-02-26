@@ -180,11 +180,12 @@ function PocGuide({ onClose }) {
           </div>
 
           <div style={S.card}>
-            <div style={S.cardTitle}>🟡 Existing account</div>
+            <div style={S.cardTitle}>🟡 Existing account — Business admin</div>
             <div style={S.cardBody}>
               Use: <span style={S.email}>demo@aegon.com</span><br/>
-              <strong>Via Login:</strong> email → password → logged in<br/>
-              <strong>Via Registration:</strong> email → "You already have an account" warning
+              <strong>Via Login:</strong> email → password → logged in as Business admin<br/>
+              <strong>Via Registration:</strong> email → "You already have an account" warning<br/>
+              <strong>After login:</strong> Go to Account to manage users, company details, subscriptions, newsletters and billing/invoices.
             </div>
           </div>
 
@@ -242,7 +243,38 @@ function PocGuide({ onClose }) {
             <div style={S.cardBody}>
               Use the <strong>deep links</strong> in the test panel to jump to specific screens.
               Switch language via the language button in the top right (NL / EN / DE / FR).
-              After registration you'll land on the <strong>onboarding page</strong> and can proceed to <strong>Account management</strong>.
+              After registration you can choose <strong>"Start introduction"</strong> (onboarding) or <strong>"Go directly to the website"</strong> (skip).
+            </div>
+          </div>
+
+          <hr style={S.divider} />
+
+          {/* ── 5. Onboarding ── */}
+          <div style={S.sectionTitle}>5. Onboarding flow</div>
+          <div style={S.card}>
+            <div style={S.cardBody}>
+              After completing registration, you see a confirmation page with two options: <strong>"Start introduction →"</strong> takes you through a 4-step onboarding, <strong>"Go directly to the website"</strong> skips it entirely.<br/><br/>
+              The onboarding consists of 4 steps in a split-screen layout with navigation (back, next, skip to site):<br/>
+              <span style={S.step}>1</span> Download the app — real QR code + App Store / Google Play badges<br/>
+              <span style={S.step}>2</span> Newsletters — toggle subscriptions on/off<br/>
+              <span style={S.step}>3</span> Follow on LinkedIn — simulated follow button<br/>
+              <span style={S.step}>4</span> All set — feature overview + "Go to Investment Officer" button
+            </div>
+          </div>
+
+          <hr style={S.divider} />
+
+          {/* ── 6. Account management ── */}
+          <div style={S.sectionTitle}>6. Account management</div>
+          <div style={S.card}>
+            <div style={S.cardBody}>
+              After login or registration, click the avatar (top right) → "My account" to access:<br/>
+              <strong>My account</strong> — edit profile details<br/>
+              <strong>Newsletters</strong> — manage per edition (NL, BE, LU tabs)<br/>
+              <strong>Subscriptions</strong> — view plan details and upgrade options<br/>
+              <strong>Users</strong> (Business/Enterprise) — invite colleagues, change roles, remove users<br/>
+              <strong>Billing</strong> (Business) — payment method (Stripe) + downloadable invoices<br/><br/>
+              Test with <span style={S.email}>demo@aegon.com</span> (login) to see the full Business admin view.
             </div>
           </div>
 
@@ -282,7 +314,7 @@ export default function DemoBanner() {
 
   /* ── Test accounts ── */
   const accounts = [
-    { email: "demo@aegon.com",      scenarios: "Login → password flow · Register → existing account warning" },
+    { email: "demo@aegon.com",      scenarios: "Login → password → logged in as Business admin (Account = user mgmt, billing, invoices)" },
     { email: "new@aegon.com",       scenarios: "Register → normal flow (known domain, no special treatment)" },
     { email: "Any @abnamro.com",    scenarios: "Login → SSO/Enterprise · Register → Enterprise detected → profile only" },
     { email: "new@wealthpro.com",   scenarios: "Login / Register → Enterprise NL (1 editie, gratis)" },

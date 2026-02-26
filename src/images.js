@@ -42,12 +42,18 @@ export const IMAGES = {
 
   // App Store badge (Apple)
   // Download via: https://developer.apple.com/app-store/marketing/guidelines/
-  badge_appstore: null,
+  badge_appstore: "/images/app_store_badge.png",
   // "/images/badge-app-store.svg"
 
   // Google Play badge
   // Download via: https://play.google.com/intl/en_us/badges/
-  badge_playstore: null,
+  badge_playstore: "/images/google_play_badge.png",
+
+  // QR code linking to the IO app in the App Store
+  qr_code: "/images/qr_io_app.png",
+
+  // IO app icon (rounded square, red with white "io")
+  app_icon: "/images/io_app_icon.png",
   // "/images/badge-google-play.png"
 
 
